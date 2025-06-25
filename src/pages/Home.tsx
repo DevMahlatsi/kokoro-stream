@@ -35,13 +35,23 @@ export default function Home() {
       state: { movie } // Pass full movie data
     });
   };
+  const handleSearch = () => {
+    if (query.trim()) {
+      const encodedQuery = encodeURIComponent(query);
+      navigate(`/search?q=${encodedQuery}`,{
+        state: {query},
+      });
+    }
+  };
 
   return (
     <>
       <Navbar />
       <main className='text-2xl text-white-800'>
-        <form>
-          
+        <form onSubmit={(e) => {
+          e.preventDefault(); // Stops reload
+          handleSearch();
+        }}>
           <div className='wrap flex-c justify-center text-2xl'>
             <input 
               value={query}
@@ -49,18 +59,22 @@ export default function Home() {
               
               className='border border-purple-400 m-0 w-60 h-13 px-3 transition placeholder-purple-400 text-purple-400 hover:border-purple-800 outline-none rounded-l-lg' 
               placeholder='Search...'
-              onChange={(e) => {setQuery(e.target.value); console.log(query)}}
-              
+              onChange={(e) => {setQuery(e.target.value); console.log(encodeURIComponent(e.target.value))}}
+
             />
             <input 
               type="button" 
               value="Search" 
-              className='m-0 text-purple-400 border h-13 px-3 hover:cursor-pointer hover:border-purple-500 hover:text-purple-500 transition rounded-r-lg border-l-none' 
+              className='m-0 text-purple-400 border h-13 px-3 hover:cursor-pointer hover:border-purple-500 hover:text-purple-500 transition rounded-r-lg border-l-none'
+              
+              onClick={() => {
+                handleSearch();
+              }}
             />
           </div>
           
           <div className='py-23'>
-            <button className='hover:cursor-pointer border py-3 rounded-xl text-purple-400 hover:text-purple-700 p-4'>
+            <button type="button" className='hover:cursor-pointer border py-3 rounded-xl text-purple-400 hover:text-purple-700 p-4'>
               Explore Library
             </button>
           </div>

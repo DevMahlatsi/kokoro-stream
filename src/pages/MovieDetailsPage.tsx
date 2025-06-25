@@ -88,8 +88,16 @@ export default function MovieDetailsPage() {
         )}
 
         {/* Movie Content */}
-        <div className="movie-content">
-          <h1 className="text-3xl">{movie.title}</h1>
+        <div className="movie-content
+         my-10 text-purple-400 rounded py-3">
+          <div>
+            <img className="rounded-xl" src={
+                      movie.poster_path 
+                        ? `https://image.tmdb.org/t/p/w300${movie.poster_path}` 
+                        : 'https://moviereelist.com/wp-content/uploads/2019/08/cinema-bg-01.jpg'
+                    } alt={`img: ${movie.title}`} /></div>
+          <div className="text-left">
+            <h1 className="text-3xl">{movie.title}</h1>
           
           {movie.release_date && (
             <p className="release-date">
@@ -118,6 +126,8 @@ export default function MovieDetailsPage() {
           {movie.overview && (
             <p className="overview">{movie.overview}</p>
           )}
+        </div>
+          
         </div>
       </div>
     </>

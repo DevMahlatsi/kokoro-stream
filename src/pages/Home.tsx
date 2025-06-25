@@ -6,8 +6,9 @@ import type {MovieApiResponse} from "../types/movies";
 
 
 export default function Home() {
+  const [query, setQuery] = useState<string>("");
   const [nowPlaying, setNowPlaying] = useState<Movie[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState<Boolean>(true);
   const navigate = useNavigate();
   
   useEffect(() => {
@@ -43,9 +44,13 @@ export default function Home() {
           
           <div className='wrap flex-c justify-center text-2xl'>
             <input 
+              value={query}
               type="search" 
+              
               className='border border-purple-400 m-0 w-60 h-13 px-3 transition placeholder-purple-400 text-purple-400 hover:border-purple-800 outline-none rounded-l-lg' 
-              placeholder='Search Anime...'
+              placeholder='Search...'
+              onChange={(e) => {setQuery(e.target.value); console.log(query)}}
+              
             />
             <input 
               type="button" 

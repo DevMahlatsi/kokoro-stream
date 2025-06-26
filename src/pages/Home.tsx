@@ -3,6 +3,8 @@ import type { Movie } from "../types/movies";
 import Navbar from "../Layout/Navbar";
 import { useNavigate } from "react-router-dom";
 import type {MovieApiResponse} from "../types/movies";
+import { MovieCard } from "../components/MovieCard";
+import MovieLayout from "../Layout/MovieLayout";
 
 
 export default function Home() {
@@ -85,32 +87,22 @@ export default function Home() {
           {loading ? (
             <p>Loading...</p>
           ) : (
-            <div className='text-white-800 flex flex-wrap gap-2 justify-center'>
+            <>
+            <MovieLayout>
               {nowPlaying.map((movie) => (
-                <div 
-                  onClick={() => handleClick(movie)}
-                  key={movie.id} 
-                  className='hover:cursor-pointer p-2 basis-30 shrink-1 grow-1 max-w-40 hover:bg-black hover:text-purple-400 rounded-2xl transition-all'
-                  role="button"
-                  tabIndex={0}
-                >
-                  <img 
-                    className='rounded-2xl w-full h-auto' 
-                    src={
-                      movie.poster_path 
-                        ? `https://image.tmdb.org/t/p/w300${movie.poster_path}` 
-                        : 'https://moviereelist.com/wp-content/uploads/2019/08/cinema-bg-01.jpg'
-                    } 
-                    alt={movie.title} 
-                    loading="lazy"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src = 'https://moviereelist.com/wp-content/uploads/2019/08/cinema-bg-01.jpg';
-                    }}
+                <MovieCard
+                  key={movie.id}
+                  movie = {movie}
+                  onClick={handleClick}
                   />
-                  <h6 className='text-xs pt-1 line-clamp-2'>{movie.title}</h6>
-                </div>
               ))}
-            </div>
+            </MovieLayout>
+              
+            </>
+            
+            
+              
+          
           )}
         </section>
       </main>

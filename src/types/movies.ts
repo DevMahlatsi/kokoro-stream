@@ -17,3 +17,7 @@ export interface MovieApiResponse {
   page: number;
   total_pages: number;
 }
+export interface MovieCardProps {
+  movie: Movie;
+  onClick: (movie: Movie) => void;
+}

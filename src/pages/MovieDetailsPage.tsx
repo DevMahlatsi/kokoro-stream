@@ -81,7 +81,7 @@ export default function MovieDetailsPage() {
               src={`https://image.tmdb.org/t/p/original${movie.backdrop_path}`}
               alt={`${movie.title} backdrop`}
             /> */}
-            <iframe src={`https://vidlink.pro/movie/${movie.id}`}
+            <iframe src={`https://vidlink.pro/movie/${movie.id}?primaryColor=7e22ce&secondaryColor=a2a2a2&iconColor=7e22ce&autoplay=false`}
             allowFullScreen
             width={`100%`} height={"600"} className="rounded-xl"></iframe>
           </div>

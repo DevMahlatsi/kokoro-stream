@@ -7,10 +7,10 @@ export interface Movie {
   release_date?: string;
   vote_average?: number;
   runtime?: number;
-  genres?: {  // Note the ? making it optional
+  genres?: Array<{
     id: number;
     name: string;
-  }[];
+  }>;
 }
 export interface MovieApiResponse {
   results: Movie[];

@@ -42,15 +42,6 @@ export default function Search(){
     fetchMovies();
   }, [location.state]);
 
-  if (loading) {
-      return (
-        <>
-          <Menu />
-          <div className="loading-spinner">Loading...</div>
-        </>
-      );
-    }
-
     const handleClick = (movie: Movie) => {
     navigate(`/movie/${movie.id}`, { 
       state: { movie } // Pass full movie data

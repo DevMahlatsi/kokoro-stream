@@ -1,5 +1,5 @@
 import React from 'react';
-import type { Movie, MovieCardProps } from '../types/movies';
+import type { MovieCardProps } from '../types/movies';
 
 
 

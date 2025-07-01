@@ -6,9 +6,9 @@ export default function Menu(){
       {id: 2, name: "Movies"},
       {id: 3, name: "TV Shows"},
       {id: 4, name: "Genres"},
-      // {id: 5, name: "Trending"}
+      {id: 5, name: "Trending"}
   ]);
-  setMenu([...menu, { id: 5, name: "Trending" }]);
+
   return (
     <>
     <div className="menu">

@@ -47,6 +47,9 @@ export default function Search(){
       state: { movie } // Pass full movie data
     });
   };
+  if (loading){
+    console.log("It is loading");
+  }
   return (
     <>
       <Menu/>
@@ -58,6 +61,7 @@ export default function Search(){
             key={movie.id}
             movie = {movie}
             onClick={handleClick}
+            
           />
         ))}
         </MovieLayout>

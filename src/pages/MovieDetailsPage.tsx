@@ -128,10 +128,10 @@ export default function MovieDetailsPage() {
           </div>
         )}
 
-        <div className="movie-content my-10 text-purple-400 rounded py-3">
-          <div>
+        <div className="movie-content my-10 flex gap-3  text-purple-400 rounded py-3">
+          <div className="basis-200" >
             <img 
-              className="rounded-xl" 
+              className="rounded-xl w-70" 
               src={
                 movie.poster_path 
                   ? `https://image.tmdb.org/t/p/w300${movie.poster_path}` 

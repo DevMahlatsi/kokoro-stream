@@ -118,7 +118,7 @@ export default function MovieDetailsPage() {
         {movie.backdrop_path && (
           <div className="backdrop">
             <iframe 
-              src={`https://vidlink.pro/movie/${movie.id}?primaryColor=7e22ce&secondaryColor=a2a2a2&iconColor=7e22ce&autoplay=false`}
+              src={`https://player.videasy.net/movie/${movie.id}`}
               allowFullScreen
               width="100%" 
               height="600" 

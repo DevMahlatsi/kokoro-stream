@@ -47,10 +47,16 @@ export default function Home() {
     fetchRecommendations();
   }, []);
     
-  const handleClick = (movie: Movie) => {
-    navigate(`/movie/${movie.id}`, { 
-      state: { movie } // Pass full movie data
+  const handleMediaClick = (media: Movie | Show) => {
+    if('title' in media){
+      navigate(`/movie/${media.id}`, { 
+      state: {movie: media } // Pass full movie data
     });
+    }
+    else{
+      navigate(`/tv/${media.id}`, {state: {show: media}})
+    };
+    
   };
   const handleSearch = () => {
     if (query.trim()) {
@@ -111,7 +117,7 @@ export default function Home() {
                 <MovieCard
                   key={movie.id}
                   movie = {movie}
-                  onClick={handleClick}
+                  onClick={handleMediaClick}
                   />
               ))}
             </MovieLayout>
@@ -134,7 +140,7 @@ export default function Home() {
                   <ShowCard
                   key={show.id}
                   show={show}
-                  onClick={handleClick}
+                  onClick={handleMediaClick}
                   />
                 ))}
               </MovieLayout>

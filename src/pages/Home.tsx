@@ -1,15 +1,16 @@
 import { useEffect, useState } from "react";
-import type { Movie } from "../types/movies";
+import type { Movie, Show, ShowApiResponse, MovieApiResponse } from "../types/movies";
 import Navbar from "../Layout/Navbar";
 import { useNavigate } from "react-router-dom";
-import type {MovieApiResponse} from "../types/movies";
 import { MovieCard } from "../components/MovieCard";
 import MovieLayout from "../Layout/MovieLayout";
+import { ShowCard } from "../components/ShowCard";
 
 
 export default function Home() {
   const [query, setQuery] = useState<string>("");
   const [nowPlaying, setNowPlaying] = useState<Movie[]>([]);
+  const [airingToday, setAiringToday] = useState<Show[]>([]);
   const [loading, setLoading] = useState<Boolean>(true);
   const navigate = useNavigate();
   
@@ -17,17 +18,31 @@ export default function Home() {
     async function fetchRecommendations() {
       try {
         const apiKey = import.meta.env.VITE_TMDB_API_KEY;
-        const response = await fetch(
+        //fetching for movies
+        const resMovies = await fetch(
           `https://api.themoviedb.org/3/movie/now_playing?api_key=${apiKey}`
         );
-        if (!response.ok) throw new Error('Network error');
-        const json: MovieApiResponse = await response.json();
+        if (!resMovies.ok) throw new Error('Network error');
+        const json: MovieApiResponse = await resMovies.json();
         setNowPlaying(json.results || []);
       } catch (err) {
-        console.error('Fetch error:', err);
+        console.error('Fetch error for fetching:', err);
       } finally {
         setLoading(false);
       }
+      try{
+      const apiKey = import.meta.env.VITE_TMDB_API_KEY;
+      const resShows = await fetch(`https://api.themoviedb.org/3/tv/airing_today?api_key=${apiKey}`);
+      if(!resShows.ok) throw new Error('Network Error');
+      const json: ShowApiResponse = await resShows.json();
+      setAiringToday(json.results || []);
+    }
+    catch(err){
+      console.error('Fetch Error for fetching TV Shows:', err);
+    }
+    finally{
+      setLoading(false);
+    }
     }
     fetchRecommendations();
   }, []);
@@ -83,7 +98,10 @@ export default function Home() {
         </form>
 
         {/* Display movies */}
-        <section>
+        <p className="text-purple-500 text-left text-3xl p-2">
+          Movies Now Playing
+        </p>
+        <section className="for-the-movies">
           {loading ? (
             <p>Loading...</p>
           ) : (
@@ -97,14 +115,36 @@ export default function Home() {
                   />
               ))}
             </MovieLayout>
-              
             </>
-            
-            
-              
           
           )}
         </section>
+        <p className="text-purple-500 text-left text-3xl p-2">
+          TV Shows Airing
+        </p>
+        <section className="for-the-tv-shows">
+          {loading ? (
+            <p>
+              Loading...
+            </p>):
+            (
+              <>
+              <MovieLayout>
+                {airingToday.map((show) => (
+                  <ShowCard
+                  key={show.id}
+                  show={show}
+                  onClick={handleClick}
+                  />
+                ))}
+              </MovieLayout>
+              </>
+            
+          )}
+
+        </section>
+        
+
       </main>
     </>
   );

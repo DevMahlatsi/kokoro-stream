@@ -1,13 +1,6 @@
 import React from 'react';
 import type { MovieCardProps } from '../types/movies';
 
-
-
-// interface MovieCardProps {
-//   movie: Movie;
-//   onClick: (movie: Movie) => void;
-// }
-
 export const MovieCard: React.FC<MovieCardProps> = ({ movie, onClick }) => {
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
     e.currentTarget.src = 'https://moviereelist.com/wp-content/uploads/2019/08/cinema-bg-01.jpg';
@@ -17,7 +10,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({ movie, onClick }) => {
     <div 
       onClick={() => onClick(movie)}
       key={movie.id}
-      className="hover:cursor-pointer p-2 basis-30 shrink-1 grow-1 max-w-40 hover:bg-black hover:text-purple-400 rounded-2xl transition-all"
+      className="hover:cursor-pointer p-2 basis-30 shrink-1 grow-1 max-w-40 hover:bg-black hover:text-white rounded-2xl text-purple-800 transition-all text-2xl"
       role="button"
       tabIndex={0}
       onKeyDown={(e) => e.key === 'Enter' && onClick(movie)}

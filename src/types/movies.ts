@@ -31,7 +31,7 @@ export interface MovieApiResponse {
   total_pages: number;
 }
 export interface ShowApiResponse {
-  results: Movie[];
+  results: Show[];
   page: number;
   total_pages: number;
 }
@@ -41,5 +41,5 @@ export interface MovieCardProps {
 }
 export interface ShowCardProps{
   show: Show;
-  onClick: (show: Show) => void;
+  onClick: (media: Show) => void;
 }

@@ -120,14 +120,13 @@ export default function TVShowDetails(){
         {show.backdrop_path && (
           <div className="backdrop">
             <iframe
-            src={`https://vidlink.pro/tv/${show.id}/1/1`}
-            allowFullScreen
-            width="100%"
-            height="600"
-            className="rounded-xl"
+              src={`https://player.videasy.net/tv/${show.id}/1/1}`}
+              allowFullScreen
+              width="100%" 
+              height="600" 
+              className="rounded-xl"
+              title={`${show.original_name} Trailer`}
             />
-            
-
           </div>
         )}
       </div>

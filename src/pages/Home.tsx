@@ -125,7 +125,7 @@ export default function Home() {
           
           )}
         </section>
-        <p className="text-purple-500 text-left text-3xl p-2">
+        <p className="text-purple-500 text-left text-3xl p-2 mt-4">
           TV Shows Airing
         </p>
         <section className="for-the-tv-shows">

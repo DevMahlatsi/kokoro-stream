@@ -1,6 +1,7 @@
 Welcome to my Streaming Clone, a modern, responsive web application inspired by popular streaming platforms.
 
 Live Demo: [kokoro-stream](https://kokoro-stream-git-main-devmahlatsis-projects.vercel.app/)
+
 Built with: TypeScript, React, Tailwind CSS, Vite
 
 About the Project:

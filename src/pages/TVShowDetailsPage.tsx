@@ -2,6 +2,9 @@ import { useLocation, useNavigate } from "react-router-dom";
 import Menu from "../components/Menu";
 import { useCallback, useEffect, useState } from "react";
 import type { Show, ShowApiResponse } from "../types/movies";
+import { ShowCard } from "../components/ShowCard";
+import MovieLayout from "../Layout/MovieLayout";
+import { MovieCard } from "../components/MovieCard";
 
 interface LocationState{
   show: Show;
@@ -11,7 +14,7 @@ export default function TVShowDetails(){
   const location = useLocation();
   const navigate = useNavigate();
   const [show, setShow] = useState<Show | null>(null);
-  const [similarShows, setSimilarShows] = useState<Show[]>([]);
+  const [similarShows, setSimilarShows] = useState<Show[]>([]);``
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -113,6 +116,9 @@ export default function TVShowDetails(){
       </>
     )
   }
+  // const handleClick = () => {
+
+  // }
   return(
     <>
       <Menu/>
@@ -120,7 +126,7 @@ export default function TVShowDetails(){
         {show.backdrop_path && (
           <div className="backdrop">
             <iframe
-              src={`https://player.videasy.net/tv/${show.id}/1/1}`}
+              src={`https://player.videasy.net/tv/${show.id}/1/1`}
               allowFullScreen
               width="100%" 
               height="600" 
@@ -129,7 +135,20 @@ export default function TVShowDetails(){
             />
           </div>
         )}
+        
+        {similarShows.length > 0 && (
+                <MovieLayout>
+                  {similarShows.map((show) => (
+                    <ShowCard
+                      key={show.id}
+                      show={show}
+                      onClick={handleClick}
+                    />
+                  ))}
+                </MovieLayout>
+              )}
       </div>
-    </>
+      </>
+      
   )
 }

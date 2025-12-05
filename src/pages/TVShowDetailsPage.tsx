@@ -126,7 +126,7 @@ export default function TVShowDetails(){
         {show.backdrop_path && (
           <div className="backdrop">
             <iframe
-              src={`https://player.videasy.net/tv/${show.id}/1/1`}
+              src={`https://vidlink.pro/tv/${show.id}/1/1`}
               allowFullScreen
               width="100%" 
               height="600" 
@@ -135,7 +135,37 @@ export default function TVShowDetails(){
             />
           </div>
         )}
-        
+        <div className="tv-content my-10 flex gap gap-3 text-purple-400 rounded py-3">
+          <div className="basis-200">
+            <img 
+            className="rounded-xl w-70"
+            src={
+                show.poster_path
+                ? `https://image.tmdb.org/t/p/w300${show.poster_path}` 
+                  : 'https://moviereelist.com/wp-content/uploads/2019/08/cinema-bg-01.jpg'
+            } alt={show.original_name} 
+            />
+          </div>
+            <div className="text-left">
+              <h1 className="text-3xl">{show.original_name}</h1>
+              {show.first_air_date && (
+                <p className="release_date">
+                  {new Date(show.first_air_date).getFullYear()}
+                </p>
+              )}
+              
+              {show.voter_average && (
+                <div className="rating">
+                  ⭐ {show.voter_average.toFixed(1)}/10
+                </div>
+              )}
+              {show.overview && (
+                <p className="overview">{show.overview}</p>
+              )}
+              
+
+            </div>
+        </div>
         {similarShows.length > 0 && (
                 <MovieLayout>
                   {similarShows.map((show) => (

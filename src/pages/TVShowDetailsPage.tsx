@@ -49,10 +49,16 @@ export default function TVShowDetails() {
       if (!showResponse.ok) throw new Error("Failed to fetch TV Show Details");
       if (!similarResponse.ok) throw new Error("Failed to fetch similar TV Shows");
 
-      const showData: Show = await showResponse.json();
+      const showData: any = await showResponse.json(); // Use any temporarily to handle API response
       const similarData: ShowApiResponse = await similarResponse.json();
 
-      setShow(showData);
+      // Process show data to ensure seasons is an array
+      const processedShowData: Show = {
+        ...showData,
+        seasons: showData.seasons || [] // Ensure seasons is always an array
+      };
+
+      setShow(processedShowData);
       setSimilarShows(similarData.results);
 
       // Fetch first season details after show loads
@@ -142,7 +148,7 @@ export default function TVShowDetails() {
   const goToNextEpisode = () => {
     if (seasonDetails && episode < seasonDetails.episode_count) {
       setEpisode(prev => prev + 1);
-    } else if (show?.seasons && season < show.seasons.length) {
+    } else if (show?.number_of_seasons && season < show.number_of_seasons) {
       // Go to next season, episode 1
       handleSeasonChange(season + 1);
     }
@@ -151,13 +157,10 @@ export default function TVShowDetails() {
   const goToPrevEpisode = () => {
     if (episode > 1) {
       setEpisode(prev => prev - 1);
-    } else if (season > 1 && show?.seasons) {
-      // Go to previous season's last episode
-      const prevSeason = show.seasons.find(s => s.season_number === season - 1);
-      if (prevSeason) {
-        handleSeasonChange(season - 1);
-        setEpisode(prevSeason.episode_count || 1);
-      }
+    } else if (season > 1) {
+      // Go to previous season
+      handleSeasonChange(season - 1);
+      // Episode will be reset to 1 in fetchSeasonDetails
     }
   };
 
@@ -252,11 +255,22 @@ export default function TVShowDetails() {
                       onChange={(e) => handleSeasonChange(Number(e.target.value))}
                       className="bg-gray-800 text-white p-1 rounded text-sm w-20"
                     >
-                      {show.seasons?.slice(0, 5).map((s: Season) => (
-                        <option key={s.season_number} value={s.season_number}>
-                          S{s.season_number}
-                        </option>
-                      ))}
+                      {/* Type-safe season selector for mobile */}
+                      {show.seasons && show.seasons.length > 0 ? (
+                        show.seasons.slice(0, 5).map((s: Season) => (
+                          <option key={s.season_number} value={s.season_number}>
+                            S{s.season_number}
+                          </option>
+                        ))
+                      ) : (
+                        Array.from({ length: show.number_of_seasons || 1 }, (_, i) => i + 1)
+                          .slice(0, 5)
+                          .map((seasonNum) => (
+                            <option key={seasonNum} value={seasonNum}>
+                              S{seasonNum}
+                            </option>
+                          ))
+                      )}
                     </select>
                     
                     <select
@@ -319,11 +333,22 @@ export default function TVShowDetails() {
                         onChange={(e) => handleSeasonChange(Number(e.target.value))}
                         className="bg-gray-800 text-white p-2 rounded"
                       >
-                        {show.seasons?.map((s: Season) => (
-                          <option key={s.season_number} value={s.season_number}>
-                            Season {s.season_number}
-                          </option>
-                        ))}
+                        {/* Type-safe season selector for desktop */}
+                        {show.seasons && show.seasons.length > 0 ? (
+                          show.seasons.map((s: Season) => (
+                            <option key={s.season_number} value={s.season_number}>
+                              Season {s.season_number} ({s.episode_count || '?'} eps)
+                            </option>
+                          ))
+                        ) : show.number_of_seasons ? (
+                          Array.from({ length: show.number_of_seasons }, (_, i) => i + 1).map((seasonNum) => (
+                            <option key={seasonNum} value={seasonNum}>
+                              Season {seasonNum}
+                            </option>
+                          ))
+                        ) : (
+                          <option value={1}>Season 1</option>
+                        )}
                       </select>
                     </div>
                     

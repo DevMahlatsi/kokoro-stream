@@ -212,9 +212,9 @@ export default function MovieDetailsPage() {
           <div className="lg:w-3/4 text-left mt-4 lg:mt-0">
             <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-2">
               {movie.title}
-              {movie.title !== movie.original_title && (
+              {movie.title !== movie.title && (
                 <span className="text-gray-400 text-lg md:text-xl block md:inline-block md:ml-3">
-                  ({movie.original_title})
+                  ({movie.title})
                 </span>
               )}
             </h1>

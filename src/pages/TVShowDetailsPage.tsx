@@ -1,43 +1,64 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import Menu from "../components/Menu";
 import { useCallback, useEffect, useState } from "react";
-import type { Show, ShowApiResponse } from "../types/movies";
+import type { Show, ShowApiResponse, Season, Episode } from "../types/movies";
 import { ShowCard } from "../components/ShowCard";
 import MovieLayout from "../Layout/MovieLayout";
-import { MovieCard } from "../components/MovieCard";
 
-interface LocationState{
+interface LocationState {
   show: Show;
 }
 
-export default function TVShowDetails(){
+interface SeasonDetails {
+  season_number: number;
+  episode_count: number;
+  episodes: Episode[];
+  name: string;
+  overview: string;
+  poster_path: string | null;
+  air_date: string;
+}
+
+export default function TVShowDetails() {
   const location = useLocation();
   const navigate = useNavigate();
+  
+  // Main states
   const [show, setShow] = useState<Show | null>(null);
-  const [similarShows, setSimilarShows] = useState<Show[]>([]);``
+  const [similarShows, setSimilarShows] = useState<Show[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
+  
+  // Player states
+  const [season, setSeason] = useState(1);
+  const [episode, setEpisode] = useState(1);
+  const [seasonDetails, setSeasonDetails] = useState<SeasonDetails | null>(null);
+  const [loadingSeason, setLoadingSeason] = useState(false);
 
   const fetchShowDetails = useCallback(async (id: string) => {
-    try{
+    try {
       setLoading(true);
       setError(null);
 
       const apiKey = import.meta.env.VITE_TMDB_API_KEY;
       const [showResponse, similarResponse] = await Promise.all([
         fetch(`https://api.themoviedb.org/3/tv/${id}?api_key=${apiKey}`),
-        fetch(`https://api.themoviedb.org/3/tv/${id}?api_key=${apiKey}`)
+        fetch(`https://api.themoviedb.org/3/tv/${id}/similar?api_key=${apiKey}`)
       ]);
 
-      if(!showResponse.ok) throw new Error("Failed to fetch TV Show Details");
-      if(!similarResponse.ok) throw new Error("Faile to fetch similar TV Shows");
-    
+      if (!showResponse.ok) throw new Error("Failed to fetch TV Show Details");
+      if (!similarResponse.ok) throw new Error("Failed to fetch similar TV Shows");
+
       const showData: Show = await showResponse.json();
       const similarData: ShowApiResponse = await similarResponse.json();
 
       setShow(showData);
-      setSimilarShows(similarData.results)
+      setSimilarShows(similarData.results);
+
+      // Fetch first season details after show loads
+      if (showData.id) {
+        fetchSeasonDetails(showData.id, 1);
+      }
 
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unknown error occurred');
@@ -45,140 +66,403 @@ export default function TVShowDetails(){
     } finally {
       setLoading(false);
     }
-  },[]);
-
-  useEffect(() => {
-    if(location.state?.show){
-      setShow((location.state as LocationState).show);
-      fetchSimilarShows((location.state as LocationState).show.id.toString());
-      setLoading(false);
-      
-    }
-    else{
-      const showId = window.location.pathname.split('/').pop();
-      if(showId){
-        fetchShowDetails(showId)
-      }
-      else{
-        setError("Invalid movie ID");
-        setLoading(false);
-      }
-    }
-  }, [location.state, fetchShowDetails]);
+  }, []);
 
   const fetchSimilarShows = useCallback(async (id: string) => {
-    try{
+    try {
       const apiKey = import.meta.env.VITE_TMDB_API_KEY;
       const res = await fetch(
-        `https:api.themoviedb.org/3/tv/${id}/similar?api_key=${apiKey}`
+        `https://api.themoviedb.org/3/tv/${id}/similar?api_key=${apiKey}`
       );
-      if(!res.ok) throw new Error("Failed to fetch similar TV Shows");
+      if (!res.ok) throw new Error("Failed to fetch similar TV Shows");
       const json: ShowApiResponse = await res.json();
       setSimilarShows(json.results);
-    }
-    catch(err){
+    } catch (err) {
       console.error("Error fetching similar movies: ", err);
     }
   }, []);
 
-  const handleClick = useCallback((show: Show) => {
-    navigate(`/tv/${show.id}`, {state: {show}});
-  }, [navigate]
-  );
+  const fetchSeasonDetails = useCallback(async (showId: number, seasonNumber: number) => {
+    try {
+      setLoadingSeason(true);
+      const apiKey = import.meta.env.VITE_TMDB_API_KEY;
+      const res = await fetch(
+        `https://api.themoviedb.org/3/tv/${showId}/season/${seasonNumber}?api_key=${apiKey}`
+      );
+      if (res.ok) {
+        const data = await res.json();
+        setSeasonDetails({
+          season_number: data.season_number,
+          episode_count: data.episodes?.length || 0,
+          episodes: data.episodes || [],
+          name: data.name || `Season ${seasonNumber}`,
+          overview: data.overview || '',
+          poster_path: data.poster_path,
+          air_date: data.air_date || ''
+        });
+        // Reset to episode 1 when season changes
+        setEpisode(1);
+      }
+    } catch (err) {
+      console.error("Error fetching season details:", err);
+    } finally {
+      setLoadingSeason(false);
+    }
+  }, []);
 
-  if(loading){
-    return(
-      <>
-      <Menu/>
-      <div className="loading-spinner">Loading...</div>
-      </>
-    );
-  }
-  if(error){
-    return(
-      <>
-      <Menu/>
-      <div className="error-message">
-          <h2>Error: {error}</h2>
-          <button onClick={() => navigate('/')}>Return to Home</button>
-        </div>
-      </>
-    );
-  }
-  if(!show){
+  useEffect(() => {
+    if (location.state?.show) {
+      const currentShow = (location.state as LocationState).show;
+      setShow(currentShow);
+      fetchSimilarShows(currentShow.id.toString());
+      fetchSeasonDetails(currentShow.id, 1);
+      setLoading(false);
+    } else {
+      const showId = window.location.pathname.split('/').pop();
+      if (showId) {
+        fetchShowDetails(showId);
+      } else {
+        setError("Invalid TV show ID");
+        setLoading(false);
+      }
+    }
+  }, [location.state, fetchShowDetails, fetchSimilarShows, fetchSeasonDetails]);
+
+  const handleClick = useCallback((show: Show) => {
+    navigate(`/tv/${show.id}`, { state: { show } });
+  }, [navigate]);
+
+  const handleSeasonChange = (newSeason: number) => {
+    if (show) {
+      fetchSeasonDetails(show.id, newSeason);
+      setSeason(newSeason);
+    }
+  };
+
+  const goToNextEpisode = () => {
+    if (seasonDetails && episode < seasonDetails.episode_count) {
+      setEpisode(prev => prev + 1);
+    } else if (show?.seasons && season < show.seasons.length) {
+      // Go to next season, episode 1
+      handleSeasonChange(season + 1);
+    }
+  };
+
+  const goToPrevEpisode = () => {
+    if (episode > 1) {
+      setEpisode(prev => prev - 1);
+    } else if (season > 1 && show?.seasons) {
+      // Go to previous season's last episode
+      const prevSeason = show.seasons.find(s => s.season_number === season - 1);
+      if (prevSeason) {
+        handleSeasonChange(season - 1);
+        setEpisode(prevSeason.episode_count || 1);
+      }
+    }
+  };
+
+  if (loading) {
     return (
       <>
         <Menu />
-        <div className="error-message">
-          <h2>Show not found</h2>
-          <button onClick={() => navigate('/')}>Return to Home</button>
+        <div className="flex justify-center items-center h-64">
+          <div className="loading-spinner text-xl">Loading show details...</div>
         </div>
       </>
-    )
+    );
   }
-  // const handleClick = () => {
 
-  // }
-  return(
+  if (error) {
+    return (
+      <>
+        <Menu />
+        <div className="error-message p-8">
+          <h2 className="text-2xl font-bold text-red-600">Error: {error}</h2>
+          <button 
+            onClick={() => navigate('/')}
+            className="mt-4 px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            Return to Home
+          </button>
+        </div>
+      </>
+    );
+  }
+
+  if (!show) {
+    return (
+      <>
+        <Menu />
+        <div className="error-message p-8">
+          <h2 className="text-2xl font-bold">Show not found</h2>
+          <button 
+            onClick={() => navigate('/')}
+            className="mt-4 px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            Return to Home
+          </button>
+        </div>
+      </>
+    );
+  }
+
+  return (
     <>
-      <Menu/>
-      <div className="show-details-cotainer">
-        {show.backdrop_path && (
-          <div className="backdrop">
-            <iframe
-              src={`https://vidlink.pro/tv/${show.id}/1/1`}
-              allowFullScreen
-              width="100%" 
-              height="600" 
-              className="rounded-xl"
-              title={`${show.original_name} Trailer`}
-            />
-          </div>
-        )}
-        <div className="tv-content my-10 flex gap gap-3 text-purple-400 rounded py-3">
-          <div className="basis-200">
-            <img 
-            className="rounded-xl w-70"
-            src={
-                show.poster_path
-                ? `https://image.tmdb.org/t/p/w300${show.poster_path}` 
-                  : 'https://moviereelist.com/wp-content/uploads/2019/08/cinema-bg-01.jpg'
-            } alt={show.original_name} 
-            />
-          </div>
-            <div className="text-left">
-              <h1 className="text-3xl">{show.original_name}</h1>
-              {show.first_air_date && (
-                <p className="release_date">
-                  {new Date(show.first_air_date).getFullYear()}
-                </p>
-              )}
+      <Menu />
+      <div className="show-details-container px-4 md:px-8 max-w-7xl mx-auto">
+        {/* Player Section */}
+        <div className="backdrop mb-6 md:mb-8">
+          <div className="player-container bg-black rounded-xl overflow-hidden shadow-lg">
+            <div className="aspect-video w-full">
+              <iframe
+                src={`https://vidlink.pro/tv/${show.id}/${season}/${episode}`}
+                allowFullScreen
+                width="100%"
+                height="100%"
+                title={`${show.original_name} - Season ${season}, Episode ${episode}`}
+                className="w-full h-full"
+              />
+            </div>
+            
+            {/* Player Controls - Improved for mobile */}
+            <div className="player-controls bg-gray-900 p-3 md:p-4">
+              {/* Mobile: Simplified controls */}
+              <div className="md:hidden">
+                <div className="text-white mb-3">
+                  <h3 className="text-lg font-bold truncate">{show.original_name}</h3>
+                  <p className="text-gray-300 text-sm">
+                    S{season}E{episode}
+                    {seasonDetails?.episodes?.[episode - 1]?.name && 
+                      `: ${seasonDetails.episodes[episode - 1].name.substring(0, 20)}...`}
+                  </p>
+                </div>
+                
+                <div className="flex justify-between items-center gap-2">
+                  <button
+                    onClick={goToPrevEpisode}
+                    disabled={(episode === 1 && season === 1) || loadingSeason}
+                    className="px-3 py-2 bg-gray-800 text-white rounded text-sm flex-1 disabled:opacity-50"
+                  >
+                    ← Prev
+                  </button>
+                  
+                  <div className="flex gap-2">
+                    <select
+                      value={season}
+                      onChange={(e) => handleSeasonChange(Number(e.target.value))}
+                      className="bg-gray-800 text-white p-1 rounded text-sm w-20"
+                    >
+                      {show.seasons?.slice(0, 5).map((s: Season) => (
+                        <option key={s.season_number} value={s.season_number}>
+                          S{s.season_number}
+                        </option>
+                      ))}
+                    </select>
+                    
+                    <select
+                      value={episode}
+                      onChange={(e) => setEpisode(Number(e.target.value))}
+                      className="bg-gray-800 text-white p-1 rounded text-sm w-24"
+                    >
+                      {seasonDetails?.episodes?.slice(0, 10).map((ep: Episode) => (
+                        <option key={ep.episode_number} value={ep.episode_number}>
+                          Ep {ep.episode_number}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  
+                  <button
+                    onClick={goToNextEpisode}
+                    disabled={loadingSeason}
+                    className="px-3 py-2 bg-gray-800 text-white rounded text-sm flex-1 disabled:opacity-50"
+                  >
+                    Next →
+                  </button>
+                </div>
+              </div>
               
-              {show.voter_average && (
-                <div className="rating">
-                  ⭐ {show.voter_average.toFixed(1)}/10
+              {/* Desktop: Full controls */}
+              <div className="hidden md:block">
+                <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+                  <div className="text-white">
+                    <h3 className="text-xl font-bold">{show.original_name}</h3>
+                    <p className="text-gray-300">
+                      Season {season} • Episode {episode}
+                      {seasonDetails?.episodes?.[episode - 1]?.name && 
+                        `: ${seasonDetails.episodes[episode - 1].name}`}
+                    </p>
+                  </div>
+                  
+                  <div className="flex items-center gap-4">
+                    <div className="flex gap-2">
+                      <button
+                        onClick={goToPrevEpisode}
+                        disabled={(episode === 1 && season === 1) || loadingSeason}
+                        className="px-4 py-2 bg-gray-800 text-white rounded hover:bg-gray-700 disabled:opacity-50"
+                      >
+                        ← Prev
+                      </button>
+                      <button
+                        onClick={goToNextEpisode}
+                        disabled={loadingSeason}
+                        className="px-4 py-2 bg-gray-800 text-white rounded hover:bg-gray-700 disabled:opacity-50"
+                      >
+                        Next →
+                      </button>
+                    </div>
+                    
+                    <div className="flex items-center gap-2">
+                      <label className="text-white">Season:</label>
+                      <select
+                        value={season}
+                        onChange={(e) => handleSeasonChange(Number(e.target.value))}
+                        className="bg-gray-800 text-white p-2 rounded"
+                      >
+                        {show.seasons?.map((s: Season) => (
+                          <option key={s.season_number} value={s.season_number}>
+                            Season {s.season_number}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    
+                    <div className="flex items-center gap-2">
+                      <label className="text-white">Episode:</label>
+                      <select
+                        value={episode}
+                        onChange={(e) => setEpisode(Number(e.target.value))}
+                        className="bg-gray-800 text-white p-2 rounded min-w-[180px]"
+                      >
+                        {seasonDetails?.episodes?.map((ep: Episode) => (
+                          <option key={ep.episode_number} value={ep.episode_number}>
+                            Ep {ep.episode_number}: {ep.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Episode Description */}
+              {seasonDetails?.episodes?.[episode - 1]?.overview && (
+                <div className="mt-3 md:mt-4 p-3 bg-gray-800 rounded">
+                  <p className="text-gray-300 text-sm md:text-base">
+                    {seasonDetails.episodes[episode - 1].overview}
+                  </p>
                 </div>
               )}
-              {show.overview && (
-                <p className="overview">{show.overview}</p>
+            </div>
+          </div>
+        </div>
+        
+        {/* Show Details - FIXED RESPONSIVE IMAGE */}
+        <div className="tv-content flex flex-col lg:flex-row gap-6 md:gap-8 mb-10 md:mb-12">
+          {/* Poster - Fixed sizing */}
+          <div className="lg:w-1/4">
+            <div className="max-w-sm mx-auto lg:max-w-none">
+              <img
+                className="rounded-xl shadow-lg w-full h-auto"
+                src={
+                  show.poster_path
+                    ? `https://image.tmdb.org/t/p/w500${show.poster_path}`
+                    : 'https://moviereelist.com/wp-content/uploads/2019/08/cinema-bg-01.jpg'
+                }
+                alt={show.original_name}
+              />
+            </div>
+          </div>
+          
+          {/* Details */}
+          <div className="lg:w-3/4 text-left mt-4 lg:mt-0">
+            <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-2">
+              {show.original_name}
+            </h1>
+            
+            {show.first_air_date && (
+              <p className="text-gray-400 mb-3 md:mb-4">
+                First aired: {new Date(show.first_air_date).toLocaleDateString()}
+              </p>
+            )}
+            
+            <div className="flex flex-wrap items-center gap-3 mb-6">
+              {show.vote_average && (
+                <div className="flex items-center gap-2 bg-gray-800 px-3 py-1 md:px-4 md:py-2 rounded-full">
+                  <span className="text-yellow-400">⭐</span>
+                  <span className="text-white font-bold">
+                    {show.vote_average.toFixed(1)}/10
+                  </span>
+                </div>
               )}
               
-
-            </div>
-        </div>
-        {similarShows.length > 0 && (
-                <MovieLayout>
-                  {similarShows.map((show) => (
-                    <ShowCard
-                      key={show.id}
-                      show={show}
-                      onClick={handleClick}
-                    />
-                  ))}
-                </MovieLayout>
+              {show.number_of_seasons && (
+                <div className="text-gray-300">
+                  {show.number_of_seasons} season{show.number_of_seasons > 1 ? 's' : ''}
+                </div>
               )}
+              
+              {show.genres && show.genres.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {show.genres.slice(0, 3).map((genre) => (
+                    <span 
+                      key={genre.id}
+                      className="px-2 py-1 bg-purple-900 text-purple-200 rounded-full text-xs md:text-sm"
+                    >
+                      {genre.name}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+            
+            {show.overview && (
+              <div className="mb-6 md:mb-8">
+                <h3 className="text-xl md:text-2xl font-semibold text-white mb-3">Overview</h3>
+                <p className="text-gray-300 md:text-lg leading-relaxed">{show.overview}</p>
+              </div>
+            )}
+            
+            {/* Season Info */}
+            {seasonDetails && (
+              <div className="bg-gray-900 p-4 md:p-6 rounded-xl">
+                <h3 className="text-xl md:text-2xl font-semibold text-white mb-3 md:mb-4">
+                  {seasonDetails.name}
+                </h3>
+                {seasonDetails.overview && (
+                  <p className="text-gray-300 mb-3 md:mb-4 text-sm md:text-base">
+                    {seasonDetails.overview}
+                  </p>
+                )}
+                <div className="text-gray-400 text-sm md:text-base">
+                  {seasonDetails.episode_count} episodes • 
+                  {seasonDetails.air_date && (
+                    ` Aired ${new Date(seasonDetails.air_date).getFullYear()}`
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+        
+        {/* Similar Shows */}
+        {similarShows.length > 0 && (
+          <div className="similar-shows mb-10 md:mb-16">
+            <h2 className="text-2xl md:text-3xl font-bold text-white mb-6 md:mb-8">
+              Similar Shows
+            </h2>
+            <MovieLayout>
+              {similarShows.map((similarShow) => (
+                <ShowCard
+                  key={similarShow.id}
+                  show={similarShow}
+                  onClick={handleClick}
+                />
+              ))}
+            </MovieLayout>
+          </div>
+        )}
       </div>
-      </>
-      
-  )
+    </>
+  );
 }

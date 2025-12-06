@@ -19,10 +19,13 @@ export interface Show {
   backdrop_path: string | null;
   overview?: string;
   first_air_date?: string;
-  voter_average?: number;
+  vote_average?: number;
+  number_of_seasons? : number;
+  number_of_episodes? : number;
   genres?: Array<{
     id: number;
     name: string;
+
   }>;
 }
 export interface MovieApiResponse {

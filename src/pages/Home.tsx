@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { Movie, Show, ShowApiResponse, MovieApiResponse } from "../types/movies";
+import type {MediaItem, ShowApiResponse, MovieApiResponse } from "../types/movies";
 import Navbar from "../Layout/Navbar";
 import { useNavigate } from "react-router-dom";
 import { MovieCard } from "../components/MovieCard";
@@ -9,8 +9,8 @@ import { ShowCard } from "../components/ShowCard";
 
 export default function Home() {
   const [query, setQuery] = useState<string>("");
-  const [nowPlaying, setNowPlaying] = useState<Movie[]>([]);
-  const [airingToday, setAiringToday] = useState<Show[]>([]);
+  const [nowPlaying, setNowPlaying] = useState<MediaItem[]>([]);
+  const [airingToday, setAiringToday] = useState<MediaItem[]>([]);
   const [loading, setLoading] = useState<Boolean>(true);
   const navigate = useNavigate();
   
@@ -47,10 +47,9 @@ export default function Home() {
     fetchRecommendations();
   }, []);
     
-  const handleMediaClick = (media: Movie | Show) => {
+  const handleMediaClick = (media: MediaItem) => {
     if('title' in media){
-      navigate(`/movie/${media.id}`, { 
-      state: {movie: media } // Pass full movie data
+      navigate(`/movie/${media.id}`, { state: {movie: media } // Pass full movie data
     });
     }
     else{

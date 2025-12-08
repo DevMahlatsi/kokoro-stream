@@ -1,12 +1,12 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import Menu from "../components/Menu";
 import { useCallback, useEffect, useState } from "react";
-import type { Show, ShowApiResponse, Season, Episode } from "../types/movies";
+import type { MediaItem, ShowApiResponse, Season, Episode } from "../types/movies";
 import { ShowCard } from "../components/ShowCard";
 import MovieLayout from "../Layout/MovieLayout";
 
 interface LocationState {
-  show: Show;
+  show: MediaItem;
 }
 
 interface SeasonDetails {
@@ -24,8 +24,8 @@ export default function TVShowDetails() {
   const navigate = useNavigate();
   
   // Main states
-  const [show, setShow] = useState<Show | null>(null);
-  const [similarShows, setSimilarShows] = useState<Show[]>([]);
+  const [show, setShow] = useState<MediaItem | null>(null);
+  const [similarShows, setSimilarShows] = useState<MediaItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
@@ -53,7 +53,7 @@ export default function TVShowDetails() {
       const similarData: ShowApiResponse = await similarResponse.json();
 
       // Process show data to ensure seasons is an array
-      const processedShowData: Show = {
+      const processedShowData: MediaItem = {
         ...showData,
         seasons: showData.seasons || [] // Ensure seasons is always an array
       };
@@ -134,7 +134,7 @@ export default function TVShowDetails() {
     }
   }, [location.state, fetchShowDetails, fetchSimilarShows, fetchSeasonDetails]);
 
-  const handleClick = useCallback((show: Show) => {
+  const handleClick = useCallback((show: MediaItem) => {
     navigate(`/tv/${show.id}`, { state: { show } });
   }, [navigate]);
 

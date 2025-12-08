@@ -1,12 +1,12 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import Menu from "../components/Menu";
 import { useCallback, useEffect, useState } from "react";
-import type { Movie, MovieApiResponse } from "../types/movies";
+import type { MediaItem, MovieApiResponse } from "../types/movies";
 import MovieLayout from "../Layout/MovieLayout";
 import { MovieCard } from "../components/MovieCard";
 
 interface LocationState {
-  movie: Movie;
+  movie: MediaItem;
 }
 
 export default function MovieDetailsPage() {
@@ -14,8 +14,8 @@ export default function MovieDetailsPage() {
   const navigate = useNavigate();
   
   // Main states
-  const [movie, setMovie] = useState<Movie | null>(null);
-  const [similarMovies, setSimilarMovies] = useState<Movie[]>([]);
+  const [movie, setMovie] = useState<MediaItem | null>(null);
+  const [similarMovies, setSimilarMovies] = useState<MediaItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [playerLoading, setPlayerLoading] = useState(false);
@@ -35,7 +35,7 @@ export default function MovieDetailsPage() {
       if (!movieResponse.ok) throw new Error('Failed to fetch movie details');
       if (!similarResponse.ok) throw new Error('Failed to fetch similar movies');
 
-      const movieData: Movie = await movieResponse.json();
+      const movieData: MediaItem = await movieResponse.json();
       const similarData: MovieApiResponse = await similarResponse.json();
 
       setMovie(movieData);
@@ -81,7 +81,7 @@ export default function MovieDetailsPage() {
     }
   }, []);
 
-  const handleClick = useCallback((movie: Movie) => {
+  const handleClick = useCallback((movie: MediaItem) => {
     navigate(`/movie/${movie.id}`, { state: { movie } });
   }, [navigate]);
 

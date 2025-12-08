@@ -17,7 +17,57 @@ export interface Episode {
   vote_count: number;
 }
 
-export interface Show {
+// export interface MediaItem {
+//   id: number;
+//   original_name: string;
+//   poster_path: string | null;
+//   backdrop_path: string | null;
+//   overview?: string;
+//   first_air_date?: string;
+//   vote_average?: number;
+//   number_of_seasons?: number;
+//   number_of_episodes?: number;
+//   seasons?: Season[];  // ADD THIS LINE
+//   genres?: Array<{
+//     id: number;
+//     name: string;
+//   }>;
+// }
+export interface MovieApiResponse{
+  results: MediaItem[];
+  page: number;
+  total_pages: number;
+}
+export interface ShowApiResponse{
+  results: MediaItem[];
+  page: number;
+  total_pages: number;
+
+}
+export interface MultiSearchResponse{
+  page: number;
+  results: MediaItem[];
+  total_pages: number;
+  total_results: number;
+}
+export interface MovieCardProps{
+  movie: {
+    id: number;
+    media_type?: 'movie' | 'tv';
+    title?: string;
+    name?: string;
+    poster_path?: string | null;
+    vote_average?: number;
+    release_date?: string;
+    first_air_date?: string;
+  };
+  onClick: () => void;
+}
+export interface ShowCardProps{
+  show: MediaItem;
+  onClick: (media: MediaItem) => void;
+}
+export interface MediaItem {
   id: number;
   original_name: string;
   poster_path: string | null;
@@ -27,46 +77,18 @@ export interface Show {
   vote_average?: number;
   number_of_seasons?: number;
   number_of_episodes?: number;
-  seasons?: Season[];  // ADD THIS LINE
-  genres?: Array<{
-    id: number;
-    name: string;
-  }>;
-}
-export interface MovieApiResponse{
-  results: Movie[];
-  page: number;
-  total_pages: number;
-}
-export interface ShowApiResponse{
-  results: Show[];
-  page: number;
-  total_pages: number;
-
-}
-export interface MovieCardProps{
-  movie: Movie;
-  onClick: (movie: Movie) => void;
-}
-export interface ShowCardProps{
-  show: Show;
-  onClick: (media: Show) => void;
-}
-export interface Movie {
-  id: number;
+  seasons?: Season[];
+  media_type: 'movie' | 'tv' | 'person';
   title: string;
-  original_title?: string; // ADD THIS
-  poster_path: string | null;
-  backdrop_path: string | null;
-  overview?: string;
-  tagline?: string; // ADD THIS
+  name: string;
+  original_title?: string; 
+  tagline?: string; 
   release_date?: string;
-  vote_average?: number;
-  vote_count?: number; // ADD THIS
+  vote_count?: number; 
   runtime?: number;
-  status?: string; // ADD THIS
-  budget?: number; // ADD THIS
-  revenue?: number; // ADD THIS
+  status?: string; 
+  budget?: number; 
+  revenue?: number; 
   genres?: Array<{
     id: number;
     name: string;

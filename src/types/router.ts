@@ -1,5 +1,5 @@
-import type {Movie} from './movies';
+import type {MediaItem} from './movies';
 
 export type RouteState = {
-  movie: Movie;
+  movie: MediaItem;
 }

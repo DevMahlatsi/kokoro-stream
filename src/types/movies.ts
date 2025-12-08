@@ -7,6 +7,8 @@ export interface Season {
   air_date: string;
 }
 
+export type movieShow = MediaItem;
+
 export interface Episode {
   episode_number: number;
   name: string;
@@ -61,7 +63,7 @@ export interface MovieCardProps{
     release_date?: string;
     first_air_date?: string;
   };
-  onClick: () => void;
+  onClick: (movie: any) => void;
 }
 export interface ShowCardProps{
   show: MediaItem;

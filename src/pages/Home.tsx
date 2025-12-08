@@ -1,24 +1,24 @@
 import { useEffect, useState } from "react";
-import type {MediaItem, ShowApiResponse, MovieApiResponse } from "../types/movies";
+import type { MediaItem, MovieApiResponse, ShowApiResponse } from "../types/movies";
 import Navbar from "../Layout/Navbar";
 import { useNavigate } from "react-router-dom";
 import { MovieCard } from "../components/MovieCard";
 import MovieLayout from "../Layout/MovieLayout";
 import { ShowCard } from "../components/ShowCard";
 
-
 export default function Home() {
   const [query, setQuery] = useState<string>("");
   const [nowPlaying, setNowPlaying] = useState<MediaItem[]>([]);
   const [airingToday, setAiringToday] = useState<MediaItem[]>([]);
-  const [loading, setLoading] = useState<Boolean>(true);
+  const [moviesLoading, setMoviesLoading] = useState<boolean>(true);
+  const [showsLoading, setShowsLoading] = useState<boolean>(true);
   const navigate = useNavigate();
   
   useEffect(() => {
     async function fetchRecommendations() {
+      // Fetch movies
       try {
         const apiKey = import.meta.env.VITE_TMDB_API_KEY;
-        //fetching for movies
         const resMovies = await fetch(
           `https://api.themoviedb.org/3/movie/now_playing?api_key=${apiKey}`
         );
@@ -26,43 +26,52 @@ export default function Home() {
         const json: MovieApiResponse = await resMovies.json();
         setNowPlaying(json.results || []);
       } catch (err) {
-        console.error('Fetch error for fetching:', err);
+        console.error('Fetch error for movies:', err);
       } finally {
-        setLoading(false);
+        setMoviesLoading(false);
       }
-      try{
-      const apiKey = import.meta.env.VITE_TMDB_API_KEY;
-      const resShows = await fetch(`https://api.themoviedb.org/3/tv/airing_today?api_key=${apiKey}`);
-      if(!resShows.ok) throw new Error('Network Error');
-      const json: ShowApiResponse = await resShows.json();
-      setAiringToday(json.results || []);
+
+      // Fetch TV shows
+      try {
+        const apiKey = import.meta.env.VITE_TMDB_API_KEY;
+        const resShows = await fetch(`https://api.themoviedb.org/3/tv/airing_today?api_key=${apiKey}`);
+        if (!resShows.ok) throw new Error('Network Error');
+        const json: ShowApiResponse = await resShows.json();
+        setAiringToday(json.results || []);
+      } catch (err) {
+        console.error('Fetch Error for TV Shows:', err);
+      } finally {
+        setShowsLoading(false);
+      }
     }
-    catch(err){
-      console.error('Fetch Error for fetching TV Shows:', err);
-    }
-    finally{
-      setLoading(false);
-    }
-    }
+    
     fetchRecommendations();
   }, []);
     
-  const handleMediaClick = (media: MediaItem) => {
-    if('title' in media){
-      navigate(`/movie/${media.id}`, { state: {movie: media } // Pass full movie data
+  const handleMovieClick = (movie: MediaItem) => {
+    navigate(`/movie/${movie.id}`, { 
+      state: { movie }
     });
-    }
-    else{
-      navigate(`/tv/${media.id}`, {state: {show: media}})
-    };
-    
   };
+
+  const handleShowClick = (show: MediaItem) => {
+    navigate(`/tv/${show.id}`, {
+      state: { show }
+    });
+  };
+
   const handleSearch = () => {
     if (query.trim()) {
-      const encodedQuery = encodeURIComponent(query);
-      navigate(`/search?q=${encodedQuery}`,{
-        state: {query},
+      navigate(`/search`, {
+        state: { query: query.trim() }
       });
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleSearch();
     }
   };
 
@@ -71,28 +80,24 @@ export default function Home() {
       <Navbar />
       <main className='text-2xl text-white-800'>
         <form onSubmit={(e) => {
-          e.preventDefault(); // Stops reload
+          e.preventDefault();
           handleSearch();
         }}>
           <div className='wrap flex-c justify-center text-2xl'>
             <input 
               value={query}
               type="search" 
-              
               className='border border-purple-400 m-0 w-60 h-13 px-3 transition placeholder-purple-400 text-purple-400 hover:border-purple-800 outline-none rounded-l-lg' 
               placeholder='Search...'
-              onChange={(e) => {setQuery(e.target.value); console.log(encodeURIComponent(e.target.value))}}
-
+              onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={handleKeyDown}
             />
-            <input 
-              type="button" 
-              value="Search" 
+            <button 
+              type="submit"
               className='m-0 text-purple-400 border h-13 px-3 hover:cursor-pointer hover:border-purple-500 hover:text-purple-500 transition rounded-r-lg border-l-none'
-              
-              onClick={() => {
-                handleSearch();
-              }}
-            />
+            >
+              Search
+            </button>
           </div>
           
           <div className='py-23'>
@@ -102,54 +107,49 @@ export default function Home() {
           </div>
         </form>
 
-        {/* Display movies */}
+        {/* Movies Section */}
         <p className="text-purple-500 text-left text-3xl p-2">
           Movies Now Playing
         </p>
         <section className="for-the-movies">
-          {loading ? (
-            <p>Loading...</p>
+          {moviesLoading ? (
+            <p>Loading movies...</p>
+          ) : nowPlaying.length === 0 ? (
+            <p>No movies available</p>
           ) : (
-            <>
             <MovieLayout>
               {nowPlaying.map((movie) => (
                 <MovieCard
                   key={movie.id}
-                  movie = {movie}
-                  onClick={handleMediaClick}
-                  />
+                  movie={movie}
+                  onClick={() => handleMovieClick(movie)}
+                />
               ))}
             </MovieLayout>
-            </>
-          
           )}
         </section>
+
+        {/* TV Shows Section */}
         <p className="text-purple-500 text-left text-3xl p-2 mt-4">
-          TV Shows Airing
+          TV Shows Airing Today
         </p>
         <section className="for-the-tv-shows">
-          {loading ? (
-            <p>
-              Loading...
-            </p>):
-            (
-              <>
-              <MovieLayout>
-                {airingToday.map((show) => (
-                  <ShowCard
+          {showsLoading ? (
+            <p>Loading TV shows...</p>
+          ) : airingToday.length === 0 ? (
+            <p>No TV shows available</p>
+          ) : (
+            <MovieLayout>
+              {airingToday.map((show) => (
+                <ShowCard
                   key={show.id}
                   show={show}
-                  onClick={handleMediaClick}
-                  />
-                ))}
-              </MovieLayout>
-              </>
-            
+                  onClick={() => handleShowClick(show)}
+                />
+              ))}
+            </MovieLayout>
           )}
-
         </section>
-        
-
       </main>
     </>
   );

@@ -15,7 +15,7 @@ function App() {
 
         <Route path='/movie/:id'  element = {<MovieDetailsPage/>} />
         <Route path='/tv/:id' element = {<TVShowDetails/>} />
-        <Route path='*' element = {<div>404 - Chief the page was not Found</div>}/>
+        <Route path='*' element = {<div>404 - Chief the page was not found.</div>}/>
         <Route path='/search' element = {<Search/>}/>
 
       </Routes>

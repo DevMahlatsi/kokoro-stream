@@ -22,6 +22,8 @@ export default function Menu(){
             <li onClick={() => handleNavClick(item.path)} className="hover:cursor-pointer hover:text-purple-700 hover:underline px-3" key={item.id}>{item.name}</li>
           ))}
         </ul>
-    </div></>
+    </div>
+    <br />
+    </>
   )
 }

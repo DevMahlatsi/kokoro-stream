@@ -135,7 +135,6 @@ export default function MovieDetailsPage() {
     <>
       <Logo/>
       <Menu />
-      <br />
       <div className="movie-details-container px-4 md:px-8 max-w-7xl mx-auto">
         {/* Player Section */}
         <div className="backdrop mb-6 md:mb-8">

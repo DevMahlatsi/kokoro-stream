@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import type { MediaItem, MultiSearchResponse } from "../types/movies";
 import { MovieCard } from "../components/MovieCard";
 import MovieLayout from "../Layout/MovieLayout";
+import Logo from "../components/Logo";
 
 export default function Search() {
   const [searchResults, setSearchResults] = useState<MediaItem[]>([]);
@@ -77,6 +78,7 @@ export default function Search() {
 
   return (
     <>
+      <Logo/>
       <Menu />
       <div>
         {searchResults.length === 0 ? (

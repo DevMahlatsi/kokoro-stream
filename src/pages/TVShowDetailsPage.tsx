@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import type { MediaItem, ShowApiResponse, Season, Episode } from "../types/movies";
 import { ShowCard } from "../components/ShowCard";
 import MovieLayout from "../Layout/MovieLayout";
+import Logo from "../components/Logo";
 
 interface LocationState {
   show: MediaItem;
@@ -211,6 +212,7 @@ export default function TVShowDetails() {
 
   return (
     <>
+      <Logo/>
       <Menu />
       <div className="show-details-container px-4 md:px-8 max-w-7xl mx-auto">
         {/* Player Section */}

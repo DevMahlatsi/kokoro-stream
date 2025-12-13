@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
-import type { MediaItem, ShowApiResponse } from "../types/movies";
+import type { MediaItem } from "../types/movies";
 import Navbar from "../Layout/Navbar";
 import { useNavigate } from "react-router-dom";
 import { MovieCard } from "../components/MovieCard";
 import MovieLayout from "../Layout/MovieLayout";
 import { ShowCard } from "../components/ShowCard";
 import { fetchNowPlaying } from "../api/movie.api";
+import { getAiringToday } from "../api/tvshow.api";
 
 export default function Home() {
   const [query, setQuery] = useState<string>("");
@@ -19,11 +20,11 @@ export default function Home() {
     async function fetchRecommendations() {
       // Fetch movies
       try {
-
+        //calling our new function
         const movies = await fetchNowPlaying();
-        console.log(movies);
+        // console.log(movies);
+        //we then fill our state variable that is to now be used
         setNowPlaying(movies);
-
 
       } catch (err) {
         console.error('Fetch error for movies:', err);
@@ -33,11 +34,8 @@ export default function Home() {
 
       // Fetch TV shows
       try {
-        const apiKey = import.meta.env.VITE_TMDB_API_KEY;
-        const resShows = await fetch(`https://api.themoviedb.org/3/tv/airing_today?api_key=${apiKey}`);
-        if (!resShows.ok) throw new Error('Network Error');
-        const json: ShowApiResponse = await resShows.json();
-        setAiringToday(json.results || []);
+        const shows = await getAiringToday();
+        setAiringToday(shows);
       } catch (err) {
         console.error('Fetch Error for TV Shows:', err);
       } finally {

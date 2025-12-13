@@ -4,7 +4,7 @@ export async function getAiringToday(): Promise<MediaItem[]>{
   try{
     const apiKey = import.meta.env.VITE_TMDB_API_KEY;
     const response = await fetch(
-      `https://api.themoviedb.org/3/tv/airing_today/?api_key=${apiKey}`
+      `https://api.themoviedb.org/3/tv/airing_today?api_key=${apiKey}&language=en-US&page=1`
     );
     if(!response.ok){
       throw new Error("Network Error");

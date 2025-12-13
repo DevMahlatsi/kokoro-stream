@@ -6,8 +6,8 @@ export default function Menu(){
   const MENU_ITEMS = [
   {id: 1, name: "Home", path: '/'},
   {id: 2, name: "Movies", path: 'movies'},
-  {id: 3, name: "TV Shows", path:'*'},
-  {id: 5, name: "Trending", path: '*'}
+  {id: 3, name: "TV Shows", path:'shows'},
+  // {id: 5, name: "Trending", path: '*'}
 ];
 
   const handleNavClick = (path: String) => {

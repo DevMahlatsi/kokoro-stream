@@ -5,6 +5,7 @@ import type { MediaItem, MovieApiResponse } from "../types/movies";
 import MovieLayout from "../Layout/MovieLayout";
 import { MovieCard } from "../components/MovieCard";
 import Logo from "../components/Logo";
+import NavBar from "../Layout/Navbar";
 
 interface LocationState {
   movie: MediaItem;
@@ -133,8 +134,7 @@ export default function MovieDetailsPage() {
 
   return (
     <>
-      <Logo/>
-      <Menu />
+      <NavBar/>
       <div className="movie-details-container px-4 md:px-8 max-w-7xl mx-auto">
         {/* Player Section */}
         <div className="backdrop mb-6 md:mb-8">

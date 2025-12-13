@@ -1,10 +1,11 @@
 import type { MediaItem } from "../types/movies";
 
+const apiKey = import.meta.env.VITE_TMDB_API_KEY;
+const baseURL = `https://api.themoviedb.org/3/tv/`;
 export async function getAiringToday(): Promise<MediaItem[]>{
   try{
-    const apiKey = import.meta.env.VITE_TMDB_API_KEY;
     const response = await fetch(
-      `https://api.themoviedb.org/3/tv/airing_today?api_key=${apiKey}&language=en-US&page=1`
+      `${baseURL}airing_today?api_key=${apiKey}&page=1`
     );
     if(!response.ok){
       throw new Error("Network Error");
@@ -16,4 +17,23 @@ export async function getAiringToday(): Promise<MediaItem[]>{
     return [];
   }
 
+}
+export async function getOnAir(): Promise<MediaItem[]>{
+  try {
+    const response = await fetch(
+      `${baseURL}on_the_air=${apiKey}&page=1`
+    );
+    if(!response.ok){
+      throw new Error("Network error");
+  }
+  const data = await response.json();
+  return data.results || [];
+
+  } catch (error) {
+    console.error('Error fetching getting shows on air', error);
+    return[]
+  }
+  
+  
+  
 }

@@ -18,21 +18,14 @@ export default function Home() {
   
   useEffect(() => {
     async function fetchRecommendations() {
-      // Fetch movies
       try {
-        //calling our new function
         const movies = await fetchNowPlaying();
-        // console.log(movies);
-        //we then fill our state variable that is to now be used
         setNowPlaying(movies);
-
       } catch (err) {
         console.error('Fetch error for movies:', err);
       } finally {
         setMoviesLoading(false);
       }
-
-      // Fetch TV shows
       try {
         const shows = await getAiringToday();
         setAiringToday(shows);
@@ -42,7 +35,6 @@ export default function Home() {
         setShowsLoading(false);
       }
     }
-    
     fetchRecommendations();
   }, []);
     

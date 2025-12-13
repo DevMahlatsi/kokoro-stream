@@ -4,7 +4,6 @@ import { useCallback, useEffect, useState } from "react";
 import type { MediaItem, MovieApiResponse } from "../types/movies";
 import MovieLayout from "../Layout/MovieLayout";
 import { MovieCard } from "../components/MovieCard";
-import Logo from "../components/Logo";
 import NavBar from "../Layout/Navbar";
 
 interface LocationState {

@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { MovieCard } from "../components/MovieCard";
 import MovieLayout from "../Layout/MovieLayout";
 import { ShowCard } from "../components/ShowCard";
+import { fetchNowPlaying } from "../api/movie.api";
 
 export default function Home() {
   const [query, setQuery] = useState<string>("");
@@ -18,13 +19,12 @@ export default function Home() {
     async function fetchRecommendations() {
       // Fetch movies
       try {
-        const apiKey = import.meta.env.VITE_TMDB_API_KEY;
-        const resMovies = await fetch(
-          `https://api.themoviedb.org/3/movie/now_playing?api_key=${apiKey}`
-        );
-        if (!resMovies.ok) throw new Error('Network error');
-        const json: MovieApiResponse = await resMovies.json();
-        setNowPlaying(json.results || []);
+
+        const movies = await fetchNowPlaying();
+        console.log(movies);
+        setNowPlaying(movies);
+
+
       } catch (err) {
         console.error('Fetch error for movies:', err);
       } finally {
@@ -115,7 +115,7 @@ export default function Home() {
           {moviesLoading ? (
             <p>Loading movies...</p>
           ) : nowPlaying.length === 0 ? (
-            <p>No movies available</p>
+            <p>{nowPlaying.length}    No movies available</p>
           ) : (
             <MovieLayout>
               {nowPlaying.map((movie) => (

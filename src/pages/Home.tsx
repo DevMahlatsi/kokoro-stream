@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { MediaItem, MovieApiResponse, ShowApiResponse } from "../types/movies";
+import type { MediaItem, ShowApiResponse } from "../types/movies";
 import Navbar from "../Layout/Navbar";
 import { useNavigate } from "react-router-dom";
 import { MovieCard } from "../components/MovieCard";
@@ -115,7 +115,7 @@ export default function Home() {
           {moviesLoading ? (
             <p>Loading movies...</p>
           ) : nowPlaying.length === 0 ? (
-            <p>{nowPlaying.length}    No movies available</p>
+            <p>No movies available</p>
           ) : (
             <MovieLayout>
               {nowPlaying.map((movie) => (

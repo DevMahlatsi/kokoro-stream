@@ -1,6 +1,6 @@
-import Logo from "../components/Logo";
+// import Logo from "../components/Logo";
 import NavBar from "../Layout/Navbar";
-import Search from "./Search";
+// import Search from "./Search";
 
 export default function(){
   return(

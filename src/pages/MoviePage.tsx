@@ -1,4 +1,4 @@
-import MovieLayout from "../Layout/MovieLayout";
+// import MovieLayout from "../Layout/MovieLayout";
 import NavBar from "../Layout/Navbar";
 
 export default function(){

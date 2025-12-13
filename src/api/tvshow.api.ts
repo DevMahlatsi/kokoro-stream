@@ -13,7 +13,7 @@ export async function getAiringToday(): Promise<MediaItem[]>{
       const data = await response.json();
       return data.results || [];
   }catch(error){
-    console.error(`Error fetching TV shows:`, error);
+    console.error(`Error fetching TV shows airing today:`, error);
     return [];
   }
 
@@ -21,7 +21,7 @@ export async function getAiringToday(): Promise<MediaItem[]>{
 export async function getOnAir(): Promise<MediaItem[]>{
   try {
     const response = await fetch(
-      `${baseURL}on_the_air=${apiKey}&page=1`
+      `${baseURL}on_the_air?api_key=${apiKey}&page=1`
     );
     if(!response.ok){
       throw new Error("Network error");
@@ -30,10 +30,40 @@ export async function getOnAir(): Promise<MediaItem[]>{
   return data.results || [];
 
   } catch (error) {
-    console.error('Error fetching getting shows on air', error);
+    console.error('Error fetching shows on air', error);
     return[]
   }
-  
-  
-  
 }
+  export async function getPopular(): Promise<MediaItem[]>{
+    try {
+      const response = await fetch(
+        `${baseURL}popular?api_key=${apiKey}&page=1`
+      );
+      if(!response.ok){
+        throw new Error("Network error");
+      }
+      const data = await response.json();
+      return data.results || [];
+    } catch (error) {
+      console.error('Error fetching popular TV shows', error);
+      return []
+    }
+    
+  }
+  export async function getTopRated(): Promise<MediaItem[]>{
+    try{
+      const response = await fetch(
+        `${baseURL}popular?api_key=${apiKey}&page=1`
+      );
+      if(!response.ok){
+        throw new Error("Network error");
+      }
+      const data = await response.json();
+      return data.results || [];
+    }catch(error){
+      console.error("Error fetching top rated shows", error);
+      return [];
+    }
+  }
+
+  

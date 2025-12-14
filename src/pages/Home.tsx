@@ -43,13 +43,11 @@ export default function Home() {
       state: { movie }
     });
   };
-
   const handleShowClick = (show: MediaItem) => {
     navigate(`/tv/${show.id}`, {
       state: { show }
     });
   };
-
   const handleSearch = () => {
     if (query.trim()) {
       navigate(`/search`, {
@@ -57,13 +55,15 @@ export default function Home() {
       });
     }
   };
-
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       e.preventDefault();
       handleSearch();
     }
   };
+  // const handleSubmit = (e) =>{
+  //   e.preventDefault();
+  // }
 
   return (
     <>

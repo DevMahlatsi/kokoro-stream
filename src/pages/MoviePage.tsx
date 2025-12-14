@@ -1,8 +1,17 @@
 // import MovieLayout from "../Layout/MovieLayout";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import NavBar from "../Layout/Navbar";
+import type { MediaItem } from "../types/movies";
+import { getNowPlaying } from "../api/movie.api";
+import MovieLayout from "../Layout/MovieLayout";
+import { MovieCard } from "../components/MovieCard";
 
 export default function(){
+  const navigate = useNavigate();
+  const [nowPlaying, setNowPlaying] = useState<MediaItem[]>([]);
+  const [moviesLoading, setMoviesLoading] = useState<boolean>(true);
+  
   useEffect(() => {
     async function fetchAll(){
       try {
@@ -14,12 +23,40 @@ export default function(){
               setMoviesLoading(false);
             }
     }
-  })
+    fetchAll();     
+  },
+    []);
+
+      const handleMovieClick = (movie: MediaItem) => {
+    navigate(`/movie/${movie.id}`, { 
+      state: { movie }
+    });
+  };
 
   return(
     <>
       This is the the movie page for the users wondering at home
       <NavBar/>
+      <p className="text-purple-500 text-left text-3xl p-2">
+          Movies Now Playing
+        </p>
+      <section className="for-the-movies">
+        {moviesLoading? (
+          <p>Loading Movies...</p>
+        ): nowPlaying.length === 0 ? (
+          <p> No movies available</p>
+        ) :(
+          <MovieLayout>
+            {nowPlaying.map((movie) =>(
+              <MovieCard
+              key={movie.id}
+              movie = {movie}
+              onClick={() => handleMovieClick(movie)}
+            />
+            ))}
+          </MovieLayout>
+        )}
+      </section>
       {/* <MovieLayout/> */}
     </>
   )

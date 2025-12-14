@@ -5,6 +5,7 @@ import type { MediaItem, ShowApiResponse, Season, Episode } from "../types/movie
 import { ShowCard } from "../components/ShowCard";
 import MovieLayout from "../Layout/MovieLayout";
 import Logo from "../components/Logo";
+import NavBar from "../Layout/Navbar";
 
 interface LocationState {
   show: MediaItem;
@@ -212,8 +213,7 @@ export default function TVShowDetails() {
 
   return (
     <>
-      <Logo/>
-      <Menu />
+      <NavBar/>
       <div className="show-details-container px-4 md:px-8 max-w-7xl mx-auto">
         {/* Player Section */}
         <div className="backdrop mb-6 md:mb-8">

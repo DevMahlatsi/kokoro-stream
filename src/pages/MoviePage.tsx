@@ -50,6 +50,9 @@ export default function(){
       catch(err){
         console.error("Error while fetching upcoming movies.");
       }
+      finally{
+        setMoviesLoading(false);
+      }
    
     }
     fetchAll();     

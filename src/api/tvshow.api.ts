@@ -34,7 +34,7 @@ export async function getOnAir(): Promise<MediaItem[]>{
     return[]
   }
 }
-  export async function getPopular(): Promise<MediaItem[]>{
+  export async function getPopularTV(): Promise<MediaItem[]>{
     try {
       const response = await fetch(
         `${baseURL}popular?api_key=${apiKey}&page=1`
@@ -50,7 +50,7 @@ export async function getOnAir(): Promise<MediaItem[]>{
     }
     
   }
-  export async function getTopRated(): Promise<MediaItem[]>{
+  export async function getTopRatedTV(): Promise<MediaItem[]>{
     try{
       const response = await fetch(
         `${baseURL}popular?api_key=${apiKey}&page=1`

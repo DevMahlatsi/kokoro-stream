@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { MovieCard } from "../components/MovieCard";
 import MovieLayout from "../Layout/MovieLayout";
 import { ShowCard } from "../components/ShowCard";
-import { fetchNowPlaying } from "../api/movie.api";
+import { getNowPlaying } from "../api/movie.api";
 import { getAiringToday } from "../api/tvshow.api";
 
 export default function Home() {
@@ -19,7 +19,7 @@ export default function Home() {
   useEffect(() => {
     async function fetchRecommendations() {
       try {
-        const movies = await fetchNowPlaying();
+        const movies = await getNowPlaying();
         setNowPlaying(movies);
       } catch (err) {
         console.error('Fetch error for movies:', err);

@@ -10,19 +10,17 @@ import { ShowCard } from "../components/ShowCard";
 export default function(){
   const navigate = useNavigate();
   const [airingToday, setAiringToday] = useState<MediaItem[]>([]);
+  const [popularshow, setPopularShow] = useState<MediaItem[]>([]);
   const [onAir, setOnAir] = useState<MediaItem[]>([]);
+  const [topRatedShow, setTopRatedShows] = useState<MediaItem[]>([]);
   const [showsLoading, setShowsLoading] = useState<boolean>(true);
-  const handleShowClick = (show: MediaItem) =>{
-    navigate(`/tv/${show.id}`,{
-      state: {show}
-  });
-  };
+  
   useEffect(() => {
     async function fetchAll(){
       try{
         const shows = await getAiringToday();
         setAiringToday(shows);
-      }catch(err){
+      }catch(error){
         console.error("Something wrong with getAiringToday", error);
         setShowsLoading(false);
       }finally{
@@ -35,18 +33,37 @@ export default function(){
         console.error("Error feching shows on air", error);
       }
       finally{
-        setShowsLoading(true);
+        setShowsLoading(false);
+      }
+      try{
+        const shows = await getOnAir();
+        setPopularShow(shows);
+      }catch(error){
+        console.error("Error feching shows on air", error);
+      }
+      finally{
+        setShowsLoading(false);
+      }
+      try{
+        const shows = await getOnAir();
+        setTopRatedShows(shows);
+      }catch(error){
+        console.error("Error feching shows on air", error);
+      }
+      finally{
+        setShowsLoading(false);
       }
       
-    
   }
-  
-  })
-  
-  
-    
-    
-  
+  fetchAll();
+  }, 
+  []);
+  const handleShowClick = (show: MediaItem) =>{
+    navigate(`/tv/${show.id}`,{
+      state: {show}
+  });
+  };
+
   return(
     <>
        <NavBar/>
@@ -62,6 +79,73 @@ export default function(){
         ) : (
           <MovieLayout>
             {airingToday.map((show) => (
+              <ShowCard 
+                key = {show.id}
+                show = {show}
+                onClick={() => handleShowClick(show)}
+              />
+            ))}
+          </MovieLayout>
+        )
+      }
+       </section>
+       <p className="text-purple-500 text-left text-3xl p-2 mt-4">
+          TV Shows On Air
+        </p>
+       <section className="for-the-tv-shows">
+        {showsLoading? (
+          <p> Loading TV shows...</p>
+
+        ): onAir.length === 0? (
+          <p>No TV shows available</p>
+        ) : (
+          <MovieLayout>
+            {onAir.map((show) => (
+              <ShowCard 
+                key = {show.id}
+                show = {show}
+                //Jerry we need a handld movie for when they click on the movie
+                onClick={() => handleShowClick(show)}
+              />
+            ))}
+          </MovieLayout>
+        )
+      }
+       </section>
+       <p className="text-purple-500 text-left text-3xl p-2 mt-4">
+          Popular TV Shows
+        </p>
+       <section className="for-the-tv-shows">
+        {showsLoading? (
+          <p> Loading TV shows...</p>
+
+        ): popularshow.length === 0? (
+          <p>No TV shows available</p>
+        ) : (
+          <MovieLayout>
+            {popularshow.map((show) => (
+              <ShowCard 
+                key = {show.id}
+                show = {show}
+                onClick={() => handleShowClick(show)}
+              />
+            ))}
+          </MovieLayout>
+        )
+      }
+       </section>
+       <p className="text-purple-500 text-left text-3xl p-2 mt-4">
+          Top Rated TV Shows
+        </p>
+       <section className="for-the-tv-shows">
+        {showsLoading? (
+          <p> Loading TV shows...</p>
+
+        ): topRatedShow.length === 0? (
+          <p>No TV shows available</p>
+        ) : (
+          <MovieLayout>
+            {topRatedShow.map((show) => (
               <ShowCard 
                 key = {show.id}
                 show = {show}

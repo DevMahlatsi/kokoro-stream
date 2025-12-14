@@ -53,7 +53,7 @@ export async function getOnAir(): Promise<MediaItem[]>{
   export async function getTopRatedTV(): Promise<MediaItem[]>{
     try{
       const response = await fetch(
-        `${baseURL}popular?api_key=${apiKey}&page=1`
+        `${baseURL}top_rated?api_key=${apiKey}&page=1`
       );
       if(!response.ok){
         throw new Error("Network error");

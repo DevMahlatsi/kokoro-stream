@@ -20,4 +20,4 @@ Styling: Tailwind VSS
 Built Tool: Vite
 Hosting: Vercel
 
-
+Theater mode requested where logo and menu will be hidden by the viewer

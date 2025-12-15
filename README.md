@@ -26,3 +26,4 @@ Instead of viewing 20 items of each, it will now be 40 or even 60.
 
 Carousel expected perhaps in the home page or all pages.
 
+Anime now requested so need to find a english anime provider api

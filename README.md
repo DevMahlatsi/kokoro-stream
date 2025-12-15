@@ -24,3 +24,5 @@ Theater mode requested where logo and menu will be hidden by the viewer
 
 Instead of viewing 20 items of each, it will now be 40 or even 60.
 
+Carousel expected perhaps in the home page or all pages.
+

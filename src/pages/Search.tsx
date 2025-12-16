@@ -1,10 +1,11 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import Menu from "../components/Menu";
 import { useEffect, useState } from "react";
-import type { MediaItem, MultiSearchResponse } from "../types/movies";
+import type { MediaItem } from "../types/movies";
 import { MovieCard } from "../components/MovieCard";
 import MovieLayout from "../Layout/MovieLayout";
 import Logo from "../components/Logo";
+import { fetchSearchResults } from "../api/search.api";
 
 export default function Search() {
   const [searchResults, setSearchResults] = useState<MediaItem[]>([]);
@@ -13,30 +14,15 @@ export default function Search() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchSearchResults = async () => {
+    const fetchSearchResultsWrapper = async () => {
       try {
-        const apiKey = import.meta.env.VITE_TMDB_API_KEY;
+        setLoading(true);
         const query = location.state?.query || '';
-
-        if (!query.trim()) {
-          setSearchResults([]);
-          return;
-        }
-
-        const response = await fetch(
-          `https://api.themoviedb.org/3/search/multi?query=${encodeURIComponent(query)}&api_key=${apiKey}`
-        );
-
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-
-        const json: MultiSearchResponse = await response.json();
         
-        // Filter out "person" results if you don't want them
-        const filteredResults = json.results.filter(
-          item => item.media_type !== 'person'
-        );
+        // Use the API function instead
+        const results = await fetchSearchResults(query);
         
-        setSearchResults(filteredResults);
+        setSearchResults(results);
       } catch (err) {
         console.error('Fetch error:', err);
         setSearchResults([]);
@@ -45,11 +31,12 @@ export default function Search() {
       }
     };
 
-    fetchSearchResults();
+    fetchSearchResultsWrapper();
   }, [location.state]);
 
+
   const handleClick = (item: MediaItem) => {
-    // Navigate to different routes based on media type
+    
     if (item.media_type === 'movie') {
       navigate(`/movie/${item.id}`, {
         state: { movie: item }
@@ -59,10 +46,7 @@ export default function Search() {
         state: { show: item }
       });
     }
-    // Note: We filtered out 'person' above, but if you keep them:
-    // else if (item.media_type === 'person') {
-    //   navigate(`/person/${item.id}`);
-    // }
+    
   };
 
   if (loading) {

@@ -145,12 +145,13 @@ export default function MovieDetailsPage() {
                 </div>
               )}
               <iframe
-                src={`https://vidlink.pro/movie/${movie.id}`}
+                src={`https://player.videasy.net/movie/${movie.id}`}
                 allowFullScreen
                 width="100%"
                 height="100%"
                 title={`${movie.title}`}
                 className="w-full h-full"
+                allow="encrypted-media"
                 onLoad={() => setPlayerLoading(false)}
               />
             </div>

@@ -220,7 +220,7 @@ export default function TVShowDetails() {
           <div className="player-container bg-black rounded-xl overflow-hidden shadow-lg">
             <div className="aspect-video w-full">
               <iframe
-                src={`https://vidlink.pro/tv/${show.id}/${season}/${episode}`}
+                src={`https://player.videasy.net/tv/${show.id}/${season}/${episode}`}
                 allowFullScreen
                 width="100%"
                 height="100%"

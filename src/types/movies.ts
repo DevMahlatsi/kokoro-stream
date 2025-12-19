@@ -69,6 +69,18 @@ export interface ShowCardProps{
   show: MediaItem;
   onClick: (media: MediaItem) => void;
 }
+export interface SeasonDetails {
+  season_number: number;
+  episode_count: number;
+  episodes: Episode[];
+  name: string;
+  overview: string;
+  poster_path: string | null;
+  air_date: string;
+}
+export interface LocationState {
+  show: MediaItem;
+}
 export interface MediaItem {
   id: number;
   original_name: string;

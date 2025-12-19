@@ -1,25 +1,13 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import Menu from "../components/Menu";
 import { useCallback, useEffect, useState } from "react";
-import type { MediaItem, ShowApiResponse, Season, Episode } from "../types/movies";
+import type { MediaItem, ShowApiResponse, Season, Episode, SeasonDetails, LocationState } from "../types/movies";
 import { ShowCard } from "../components/ShowCard";
 import MovieLayout from "../Layout/MovieLayout";
 // import Logo from "../components/Logo";
 import NavBar from "../Layout/Navbar";
 
-interface LocationState {
-  show: MediaItem;
-}
 
-interface SeasonDetails {
-  season_number: number;
-  episode_count: number;
-  episodes: Episode[];
-  name: string;
-  overview: string;
-  poster_path: string | null;
-  air_date: string;
-}
 
 export default function TVShowDetails() {
   const location = useLocation();
@@ -36,6 +24,8 @@ export default function TVShowDetails() {
   const [episode, setEpisode] = useState(1);
   const [seasonDetails, setSeasonDetails] = useState<SeasonDetails | null>(null);
   const [loadingSeason, setLoadingSeason] = useState(false);
+
+  const [isTheaterMode, setIsTheaterMode] = useState(false);
 
   const fetchShowDetails = useCallback(async (id: string) => {
     try {
@@ -213,11 +203,19 @@ export default function TVShowDetails() {
 
   return (
     <>
-      <NavBar/>
-      <div className="show-details-container px-4 md:px-8 max-w-7xl mx-auto">
+      {/* Conditionally render NavBar based on theater mode */}
+      {!isTheaterMode && <NavBar />}
+      
+      <div className={`show-details-container px-4 md:px-8 mx-auto ${
+        isTheaterMode ? 'max-w-full px-0' : 'max-w-7xl'
+      }`}>
         {/* Player Section */}
-        <div className="backdrop mb-6 md:mb-8">
-          <div className="player-container bg-black rounded-xl overflow-hidden shadow-lg">
+        <div className={`backdrop mb-6 md:mb-8 ${
+          isTheaterMode ? 'px-4 md:px-8' : ''
+        }`}>
+          <div className={`player-container bg-black rounded-xl overflow-hidden shadow-lg ${
+            isTheaterMode ? 'rounded-none md:rounded-none' : ''
+          }`}>
             <div className="aspect-video w-full">
               <iframe
                 src={`https://player.videasy.net/tv/${show.id}/${season}/${episode}`}
@@ -286,6 +284,15 @@ export default function TVShowDetails() {
                         </option>
                       ))}
                     </select>
+                    
+                    {/* Theater Mode Button - Mobile */}
+                    <button
+                      onClick={() => setIsTheaterMode(!isTheaterMode)}
+                      className="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 flex items-center gap-1"
+                      title={isTheaterMode ? "Exit Theater Mode" : "Theater Mode"}
+                    >
+                      {isTheaterMode ? '✕' : '◼'}
+                    </button>
                   </div>
                   
                   <button
@@ -325,6 +332,25 @@ export default function TVShowDetails() {
                         className="px-4 py-2 bg-gray-800 text-white rounded hover:bg-gray-700 disabled:opacity-50"
                       >
                         Next →
+                      </button>
+                      
+                      {/* Theater Mode Button - Desktop */}
+                      <button
+                        onClick={() => setIsTheaterMode(!isTheaterMode)}
+                        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-2"
+                        title={isTheaterMode ? "Exit Theater Mode" : "Theater Mode"}
+                      >
+                        {isTheaterMode ? (
+                          <>
+                            <span>✕</span>
+                            <span>Exit Theater</span>
+                          </>
+                        ) : (
+                          <>
+                            <span>◼</span>
+                            <span>Theater</span>
+                          </>
+                        )}
                       </button>
                     </div>
                     
@@ -384,110 +410,115 @@ export default function TVShowDetails() {
           </div>
         </div>
         
-        {/* Show Details - FIXED RESPONSIVE IMAGE */}
-        <div className="tv-content flex flex-col lg:flex-row gap-6 md:gap-8 mb-10 md:mb-12">
-          {/* Poster - Fixed sizing */}
-          <div className="lg:w-1/4">
-            <div className="max-w-sm mx-auto lg:max-w-none">
-              <img
-                className="rounded-xl shadow-lg w-full h-auto"
-                src={
-                  show.poster_path
-                    ? `https://image.tmdb.org/t/p/w500${show.poster_path}`
-                    : 'https://moviereelist.com/wp-content/uploads/2019/08/cinema-bg-01.jpg'
-                }
-                alt={show.original_name}
-              />
-            </div>
-          </div>
-          
-          {/* Details */}
-          <div className="lg:w-3/4 text-left mt-4 lg:mt-0">
-            <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-2">
-              {show.original_name}
-            </h1>
-            
-            {show.first_air_date && (
-              <p className="text-gray-400 mb-3 md:mb-4">
-                First aired: {new Date(show.first_air_date).toLocaleDateString()}
-              </p>
-            )}
-            
-            <div className="flex flex-wrap items-center gap-3 mb-6">
-              {show.vote_average && (
-                <div className="flex items-center gap-2 bg-gray-800 px-3 py-1 md:px-4 md:py-2 rounded-full">
-                  <span className="text-yellow-400">⭐</span>
-                  <span className="text-white font-bold">
-                    {show.vote_average.toFixed(1)}/10
-                  </span>
+        {/* Conditionally render content based on theater mode */}
+        {!isTheaterMode && (
+          <>
+            {/* Show Details - FIXED RESPONSIVE IMAGE */}
+            <div className="tv-content flex flex-col lg:flex-row gap-6 md:gap-8 mb-10 md:mb-12">
+              {/* Poster - Fixed sizing */}
+              <div className="lg:w-1/4">
+                <div className="max-w-sm mx-auto lg:max-w-none">
+                  <img
+                    className="rounded-xl shadow-lg w-full h-auto"
+                    src={
+                      show.poster_path
+                        ? `https://image.tmdb.org/t/p/w500${show.poster_path}`
+                        : 'https://moviereelist.com/wp-content/uploads/2019/08/cinema-bg-01.jpg'
+                    }
+                    alt={show.original_name}
+                  />
                 </div>
-              )}
-              
-              {show.number_of_seasons && (
-                <div className="text-gray-300">
-                  {show.number_of_seasons} season{show.number_of_seasons > 1 ? 's' : ''}
-                </div>
-              )}
-              
-              {show.genres && show.genres.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {show.genres.slice(0, 3).map((genre) => (
-                    <span 
-                      key={genre.id}
-                      className="px-2 py-1 bg-purple-900 text-purple-200 rounded-full text-xs md:text-sm"
-                    >
-                      {genre.name}
-                    </span>
-                  ))}
-                </div>
-              )}
-            </div>
-            
-            {show.overview && (
-              <div className="mb-6 md:mb-8">
-                <h3 className="text-xl md:text-2xl font-semibold text-white mb-3">Overview</h3>
-                <p className="text-gray-300 md:text-lg leading-relaxed">{show.overview}</p>
               </div>
-            )}
-            
-            {/* Season Info */}
-            {seasonDetails && (
-              <div className="bg-gray-900 p-4 md:p-6 rounded-xl">
-                <h3 className="text-xl md:text-2xl font-semibold text-white mb-3 md:mb-4">
-                  {seasonDetails.name}
-                </h3>
-                {seasonDetails.overview && (
-                  <p className="text-gray-300 mb-3 md:mb-4 text-sm md:text-base">
-                    {seasonDetails.overview}
+              
+              {/* Details */}
+              <div className="lg:w-3/4 text-left mt-4 lg:mt-0">
+                <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-2">
+                  {show.original_name}
+                </h1>
+                
+                {show.first_air_date && (
+                  <p className="text-gray-400 mb-3 md:mb-4">
+                    First aired: {new Date(show.first_air_date).toLocaleDateString()}
                   </p>
                 )}
-                <div className="text-gray-400 text-sm md:text-base">
-                  {seasonDetails.episode_count} episodes • 
-                  {seasonDetails.air_date && (
-                    ` Aired ${new Date(seasonDetails.air_date).getFullYear()}`
+                
+                <div className="flex flex-wrap items-center gap-3 mb-6">
+                  {show.vote_average && (
+                    <div className="flex items-center gap-2 bg-gray-800 px-3 py-1 md:px-4 md:py-2 rounded-full">
+                      <span className="text-yellow-400">⭐</span>
+                      <span className="text-white font-bold">
+                        {show.vote_average.toFixed(1)}/10
+                      </span>
+                    </div>
+                  )}
+                  
+                  {show.number_of_seasons && (
+                    <div className="text-gray-300">
+                      {show.number_of_seasons} season{show.number_of_seasons > 1 ? 's' : ''}
+                    </div>
+                  )}
+                  
+                  {show.genres && show.genres.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {show.genres.slice(0, 3).map((genre) => (
+                        <span 
+                          key={genre.id}
+                          className="px-2 py-1 bg-purple-900 text-purple-200 rounded-full text-xs md:text-sm"
+                        >
+                          {genre.name}
+                        </span>
+                      ))}
+                    </div>
                   )}
                 </div>
+                
+                {show.overview && (
+                  <div className="mb-6 md:mb-8">
+                    <h3 className="text-xl md:text-2xl font-semibold text-white mb-3">Overview</h3>
+                    <p className="text-gray-300 md:text-lg leading-relaxed">{show.overview}</p>
+                  </div>
+                )}
+                
+                {/* Season Info */}
+                {seasonDetails && (
+                  <div className="bg-gray-900 p-4 md:p-6 rounded-xl">
+                    <h3 className="text-xl md:text-2xl font-semibold text-white mb-3 md:mb-4">
+                      {seasonDetails.name}
+                    </h3>
+                    {seasonDetails.overview && (
+                      <p className="text-gray-300 mb-3 md:mb-4 text-sm md:text-base">
+                        {seasonDetails.overview}
+                      </p>
+                    )}
+                    <div className="text-gray-400 text-sm md:text-base">
+                      {seasonDetails.episode_count} episodes • 
+                      {seasonDetails.air_date && (
+                        ` Aired ${new Date(seasonDetails.air_date).getFullYear()}`
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            {/* Similar Shows */}
+            {similarShows.length > 0 && (
+              <div className="similar-shows mb-10 md:mb-16">
+                <h2 className="text-2xl md:text-3xl font-bold text-white mb-6 md:mb-8">
+                  Similar Shows
+                </h2>
+                <MovieLayout>
+                  {similarShows.map((similarShow) => (
+                    <ShowCard
+                      key={similarShow.id}
+                      show={similarShow}
+                      onClick={handleClick}
+                    />
+                  ))}
+                </MovieLayout>
               </div>
             )}
-          </div>
-        </div>
-        
-        {/* Similar Shows */}
-        {similarShows.length > 0 && (
-          <div className="similar-shows mb-10 md:mb-16">
-            <h2 className="text-2xl md:text-3xl font-bold text-white mb-6 md:mb-8">
-              Similar Shows
-            </h2>
-            <MovieLayout>
-              {similarShows.map((similarShow) => (
-                <ShowCard
-                  key={similarShow.id}
-                  show={similarShow}
-                  onClick={handleClick}
-                />
-              ))}
-            </MovieLayout>
-          </div>
+          </>
         )}
       </div>
     </>

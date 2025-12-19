@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 
 import './App.css';
 import Home from './pages/Home';
@@ -16,7 +16,9 @@ function App() {
         <Route path="/" element = {<Home />} />
 
         <Route path='/movie/:id'  element = {<MovieDetailsPage/>} />;
-        <Route path='/tv/:id' element = {<TVShowDetails/>} />;
+        {/* <Route path='/tv/:id' element = {<TVShowDetails/>} />; */}
+        <Route path="/tv/:id/season/:season/episode/:episode" element={<TVShowDetails />} />
+        <Route path="/tv/:id" element={<Navigate to="/tv/:id/season/1/episode/1" replace />} />
         <Route path='/movies' element = {<MoviePage/>}/>;
         <Route path='/shows' element = {<TVShowPage/>}/>;
         <Route path='*' element = {<div>404 - Chief the page was not found.</div>}/>;

@@ -1,17 +1,33 @@
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import Menu from "../components/Menu";
 import { useCallback, useEffect, useState } from "react";
-import type { MediaItem, ShowApiResponse, Season, Episode, SeasonDetails, LocationState } from "../types/movies";
+import type { MediaItem, ShowApiResponse, Season, Episode } from "../types/movies";
 import { ShowCard } from "../components/ShowCard";
 import MovieLayout from "../Layout/MovieLayout";
-// import Logo from "../components/Logo";
 import NavBar from "../Layout/Navbar";
 
+interface LocationState {
+  show: MediaItem;
+}
 
+interface SeasonDetails {
+  season_number: number;
+  episode_count: number;
+  episodes: Episode[];
+  name: string;
+  overview: string;
+  poster_path: string | null;
+  air_date: string;
+}
 
 export default function TVShowDetails() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { id, season: urlSeason, episode: urlEpisode } = useParams<{
+    id: string;
+    season?: string;
+    episode?: string;
+  }>();
   
   // Main states
   const [show, setShow] = useState<MediaItem | null>(null);
@@ -19,12 +35,13 @@ export default function TVShowDetails() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  // Player states
-  const [season, setSeason] = useState(1);
-  const [episode, setEpisode] = useState(1);
+  // Player states - initialize from URL params if available
+  const [season, setSeason] = useState(urlSeason ? parseInt(urlSeason, 10) : 1);
+  const [episode, setEpisode] = useState(urlEpisode ? parseInt(urlEpisode, 10) : 1);
   const [seasonDetails, setSeasonDetails] = useState<SeasonDetails | null>(null);
   const [loadingSeason, setLoadingSeason] = useState(false);
-
+  
+  // Theater mode state
   const [isTheaterMode, setIsTheaterMode] = useState(false);
 
   const fetchShowDetails = useCallback(async (id: string) => {
@@ -41,21 +58,22 @@ export default function TVShowDetails() {
       if (!showResponse.ok) throw new Error("Failed to fetch TV Show Details");
       if (!similarResponse.ok) throw new Error("Failed to fetch similar TV Shows");
 
-      const showData: any = await showResponse.json(); // Use any temporarily to handle API response
+      const showData: any = await showResponse.json();
       const similarData: ShowApiResponse = await similarResponse.json();
 
       // Process show data to ensure seasons is an array
       const processedShowData: MediaItem = {
         ...showData,
-        seasons: showData.seasons || [] // Ensure seasons is always an array
+        seasons: showData.seasons || []
       };
 
       setShow(processedShowData);
       setSimilarShows(similarData.results);
 
-      // Fetch first season details after show loads
+      // Fetch season details based on URL params or default to season 1
+      const initialSeason = urlSeason ? parseInt(urlSeason, 10) : 1;
       if (showData.id) {
-        fetchSeasonDetails(showData.id, 1);
+        fetchSeasonDetails(showData.id, initialSeason);
       }
 
     } catch (err) {
@@ -64,7 +82,7 @@ export default function TVShowDetails() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [urlSeason, urlEpisode]);
 
   const fetchSimilarShows = useCallback(async (id: string) => {
     try {
@@ -89,7 +107,7 @@ export default function TVShowDetails() {
       );
       if (res.ok) {
         const data = await res.json();
-        setSeasonDetails({
+        const newSeasonDetails = {
           season_number: data.season_number,
           episode_count: data.episodes?.length || 0,
           episodes: data.episodes || [],
@@ -97,64 +115,42 @@ export default function TVShowDetails() {
           overview: data.overview || '',
           poster_path: data.poster_path,
           air_date: data.air_date || ''
-        });
-        // Reset to episode 1 when season changes
-        setEpisode(1);
+        };
+        setSeasonDetails(newSeasonDetails);
+        
+        // If current episode is invalid for this season, reset to episode 1
+        if (episode > newSeasonDetails.episode_count) {
+          setEpisode(1);
+        }
       }
     } catch (err) {
       console.error("Error fetching season details:", err);
     } finally {
       setLoadingSeason(false);
     }
-  }, []);
+  }, [episode]);
 
   useEffect(() => {
     if (location.state?.show) {
       const currentShow = (location.state as LocationState).show;
       setShow(currentShow);
       fetchSimilarShows(currentShow.id.toString());
-      fetchSeasonDetails(currentShow.id, 1);
+      
+      // Use URL params if available, otherwise fetch season 1
+      const initialSeason = urlSeason ? parseInt(urlSeason, 10) : 1;
+      fetchSeasonDetails(currentShow.id, initialSeason);
       setLoading(false);
+    } else if (id) {
+      fetchShowDetails(id);
     } else {
-      const showId = window.location.pathname.split('/').pop();
-      if (showId) {
-        fetchShowDetails(showId);
-      } else {
-        setError("Invalid TV show ID");
-        setLoading(false);
-      }
+      setError("Invalid TV show ID");
+      setLoading(false);
     }
-  }, [location.state, fetchShowDetails, fetchSimilarShows, fetchSeasonDetails]);
+  }, [location.state, id, urlSeason, urlEpisode, fetchShowDetails, fetchSimilarShows, fetchSeasonDetails]);
 
   const handleClick = useCallback((show: MediaItem) => {
-    navigate(`/tv/${show.id}`, { state: { show } });
+    navigate(`/tv/${show.id}/season/1/episode/1`, { state: { show } });
   }, [navigate]);
-
-  const handleSeasonChange = (newSeason: number) => {
-    if (show) {
-      fetchSeasonDetails(show.id, newSeason);
-      setSeason(newSeason);
-    }
-  };
-
-  const goToNextEpisode = () => {
-    if (seasonDetails && episode < seasonDetails.episode_count) {
-      setEpisode(prev => prev + 1);
-    } else if (show?.number_of_seasons && season < show.number_of_seasons) {
-      // Go to next season, episode 1
-      handleSeasonChange(season + 1);
-    }
-  };
-
-  const goToPrevEpisode = () => {
-    if (episode > 1) {
-      setEpisode(prev => prev - 1);
-    } else if (season > 1) {
-      // Go to previous season
-      handleSeasonChange(season - 1);
-      // Episode will be reset to 1 in fetchSeasonDetails
-    }
-  };
 
   if (loading) {
     return (
@@ -200,6 +196,49 @@ export default function TVShowDetails() {
       </>
     );
   }
+
+  // Functions that depend on show being not null
+  const updateUrlParams = useCallback((newSeason: number, newEpisode: number) => {
+    navigate(`/tv/${show.id}/season/${newSeason}/episode/${newEpisode}`, {
+      replace: true,
+      state: { show }
+    });
+  }, [show, navigate]);
+
+  const handleSeasonChange = useCallback((newSeason: number) => {
+    fetchSeasonDetails(show.id, newSeason);
+    setSeason(newSeason);
+    updateUrlParams(newSeason, 1);
+  }, [show, fetchSeasonDetails, updateUrlParams]);
+
+  const handleEpisodeChange = useCallback((newEpisode: number) => {
+    setEpisode(newEpisode);
+    updateUrlParams(season, newEpisode);
+  }, [show, season, updateUrlParams]);
+
+  const goToNextEpisode = () => {
+    if (seasonDetails && episode < seasonDetails.episode_count) {
+      const newEpisode = episode + 1;
+      setEpisode(newEpisode);
+      updateUrlParams(season, newEpisode);
+    } else if (show.number_of_seasons && season < show.number_of_seasons) {
+      // Go to next season, episode 1
+      const newSeason = season + 1;
+      handleSeasonChange(newSeason);
+    }
+  };
+
+  const goToPrevEpisode = () => {
+    if (episode > 1) {
+      const newEpisode = episode - 1;
+      setEpisode(newEpisode);
+      updateUrlParams(season, newEpisode);
+    } else if (season > 1) {
+      // Go to previous season
+      const newSeason = season - 1;
+      handleSeasonChange(newSeason);
+    }
+  };
 
   return (
     <>
@@ -275,7 +314,7 @@ export default function TVShowDetails() {
                     
                     <select
                       value={episode}
-                      onChange={(e) => setEpisode(Number(e.target.value))}
+                      onChange={(e) => handleEpisodeChange(Number(e.target.value))}
                       className="bg-gray-800 text-white p-1 rounded text-sm w-24"
                     >
                       {seasonDetails?.episodes?.slice(0, 10).map((ep: Episode) => (
@@ -384,7 +423,7 @@ export default function TVShowDetails() {
                       <label className="text-white">Episode:</label>
                       <select
                         value={episode}
-                        onChange={(e) => setEpisode(Number(e.target.value))}
+                        onChange={(e) => handleEpisodeChange(Number(e.target.value))}
                         className="bg-gray-800 text-white p-2 rounded min-w-[180px]"
                       >
                         {seasonDetails?.episodes?.map((ep: Episode) => (

@@ -20,6 +20,9 @@ export default function MovieDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [playerLoading, setPlayerLoading] = useState(false);
+  
+  // Theater mode state
+  const [isTheaterMode, setIsTheaterMode] = useState(false);
 
   const fetchMovieDetails = useCallback(async (id: string) => {
     try {
@@ -133,11 +136,19 @@ export default function MovieDetailsPage() {
 
   return (
     <>
-      <NavBar/>
-      <div className="movie-details-container px-4 md:px-8 max-w-7xl mx-auto">
+      {/* Conditionally render NavBar based on theater mode */}
+      {!isTheaterMode && <NavBar />}
+      
+      <div className={`movie-details-container px-4 md:px-8 mx-auto ${
+        isTheaterMode ? 'max-w-full px-0' : 'max-w-7xl'
+      }`}>
         {/* Player Section */}
-        <div className="backdrop mb-6 md:mb-8">
-          <div className="player-container bg-black rounded-xl overflow-hidden shadow-lg">
+        <div className={`backdrop mb-6 md:mb-8 ${
+          isTheaterMode ? 'px-4 md:px-8' : ''
+        }`}>
+          <div className={`player-container bg-black rounded-xl overflow-hidden shadow-lg ${
+            isTheaterMode ? 'rounded-none md:rounded-none' : ''
+          }`}>
             <div className="aspect-video w-full relative">
               {playerLoading && (
                 <div className="absolute inset-0 flex items-center justify-center bg-gray-900">
@@ -176,9 +187,30 @@ export default function MovieDetailsPage() {
                   >
                     ← Back
                   </button>
+                  
+                  {/* Theater Mode Button */}
+                  <button
+                    onClick={() => setIsTheaterMode(!isTheaterMode)}
+                    className={`px-3 py-2 text-white rounded text-sm md:text-base flex items-center gap-2 ${
+                      isTheaterMode ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600 hover:bg-blue-700'
+                    }`}
+                  >
+                    {isTheaterMode ? (
+                      <>
+                        <span>✕</span>
+                        <span>Exit Theater</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>◼</span>
+                        <span>Theater Mode</span>
+                      </>
+                    )}
+                  </button>
+                  
                   <button
                     onClick={() => window.location.reload()}
-                    className="px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm md:text-base"
+                    className="px-3 py-2 bg-gray-800 text-white rounded hover:bg-gray-700 text-sm md:text-base"
                   >
                     ↻ Reload Player
                   </button>
@@ -193,182 +225,186 @@ export default function MovieDetailsPage() {
           </div>
         </div>
         
-        {/* Movie Details */}
-        <div className="movie-content flex flex-col lg:flex-row gap-6 md:gap-8 mb-10 md:mb-12">
-          {/* Poster */}
-          <div className="lg:w-1/4">
-            <div className="max-w-sm mx-auto lg:max-w-none">
-              <img
-                className="rounded-xl shadow-lg w-full h-auto"
-                src={
-                  movie.poster_path
-                    ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
-                    : 'https://moviereelist.com/wp-content/uploads/2019/08/cinema-bg-01.jpg'
-                }
-                alt={movie.title}
-              />
-            </div>
-          </div>
-          
-          {/* Details */}
-          <div className="lg:w-3/4 text-left mt-4 lg:mt-0">
-            <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-2">
-              {movie.title}
-              {movie.title !== movie.title && (
-                <span className="text-gray-400 text-lg md:text-xl block md:inline-block md:ml-3">
-                  ({movie.title})
-                </span>
-              )}
-            </h1>
-            
-            {movie.tagline && (
-              <p className="text-gray-300 italic text-lg md:text-xl mb-4">
-                "{movie.tagline}"
-              </p>
-            )}
-            
-            <div className="flex flex-wrap items-center gap-3 mb-6">
-              {/* Rating */}
-              {movie.vote_average && (
-                <div className="flex items-center gap-2 bg-gray-800 px-3 py-1 md:px-4 md:py-2 rounded-full">
-                  <span className="text-yellow-400">⭐</span>
-                  <span className="text-white font-bold">
-                    {movie.vote_average.toFixed(1)}/10
-                  </span>
-                  {movie.vote_count && (
-                    <span className="text-gray-300 text-sm ml-1">
-                      ({movie.vote_count.toLocaleString()} votes)
+        {!isTheaterMode && (
+          <>
+            {/* Movie Details */}
+            <div className="movie-content flex flex-col lg:flex-row gap-6 md:gap-8 mb-10 md:mb-12">
+              {/* Poster */}
+              <div className="lg:w-1/4">
+                <div className="max-w-sm mx-auto lg:max-w-none">
+                  <img
+                    className="rounded-xl shadow-lg w-full h-auto"
+                    src={
+                      movie.poster_path
+                        ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
+                        : 'https://moviereelist.com/wp-content/uploads/2019/08/cinema-bg-01.jpg'
+                    }
+                    alt={movie.title}
+                  />
+                </div>
+              </div>
+              
+              {/* Details */}
+              <div className="lg:w-3/4 text-left mt-4 lg:mt-0">
+                <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-2">
+                  {movie.title}
+                  {movie.title !== movie.title && (
+                    <span className="text-gray-400 text-lg md:text-xl block md:inline-block md:ml-3">
+                      ({movie.title})
                     </span>
                   )}
+                </h1>
+                
+                {movie.tagline && (
+                  <p className="text-gray-300 italic text-lg md:text-xl mb-4">
+                    "{movie.tagline}"
+                  </p>
+                )}
+                
+                <div className="flex flex-wrap items-center gap-3 mb-6">
+                  {/* Rating */}
+                  {movie.vote_average && (
+                    <div className="flex items-center gap-2 bg-gray-800 px-3 py-1 md:px-4 md:py-2 rounded-full">
+                      <span className="text-yellow-400">⭐</span>
+                      <span className="text-white font-bold">
+                        {movie.vote_average.toFixed(1)}/10
+                      </span>
+                      {movie.vote_count && (
+                        <span className="text-gray-300 text-sm ml-1">
+                          ({movie.vote_count.toLocaleString()} votes)
+                        </span>
+                      )}
+                    </div>
+                  )}
+                  
+                  {/* Release Date */}
+                  {movie.release_date && (
+                    <div className="text-gray-300">
+                      📅 {new Date(movie.release_date).toLocaleDateString()}
+                    </div>
+                  )}
+                  
+                  {/* Runtime */}
+                  {movie.runtime && (
+                    <div className="text-gray-300">
+                      ⏱️ {movie.runtime} minutes
+                    </div>
+                  )}
+                  
+                  {/* Genres */}
+                  {movie.genres && movie.genres.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {movie.genres.slice(0, 4).map((genre) => (
+                        <span 
+                          key={genre.id}
+                          className="px-2 py-1 bg-purple-900 text-purple-200 rounded-full text-xs md:text-sm"
+                        >
+                          {genre.name}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              )}
-              
-              {/* Release Date */}
-              {movie.release_date && (
-                <div className="text-gray-300">
-                  📅 {new Date(movie.release_date).toLocaleDateString()}
+                
+                {/* Overview */}
+                {movie.overview && (
+                  <div className="mb-6 md:mb-8">
+                    <h3 className="text-xl md:text-2xl font-semibold text-white mb-3">Overview</h3>
+                    <p className="text-gray-300 md:text-lg leading-relaxed">{movie.overview}</p>
+                  </div>
+                )}
+                
+                {/* Additional Details */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                  {/* Production Companies */}
+                  {movie.production_companies && movie.production_companies.length > 0 && (
+                    <div className="bg-gray-900 p-4 rounded-xl">
+                      <h4 className="text-lg font-semibold text-white mb-3">Production Companies</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {movie.production_companies.slice(0, 3).map((company) => (
+                          <span 
+                            key={company.id}
+                            className="px-3 py-1 bg-gray-800 text-gray-300 rounded text-sm"
+                          >
+                            {company.name}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Languages */}
+                  {movie.spoken_languages && movie.spoken_languages.length > 0 && (
+                    <div className="bg-gray-900 p-4 rounded-xl">
+                      <h4 className="text-lg font-semibold text-white mb-3">Languages</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {movie.spoken_languages.slice(0, 3).map((lang) => (
+                          <span 
+                            key={lang.iso_639_1}
+                            className="px-3 py-1 bg-gray-800 text-gray-300 rounded text-sm"
+                          >
+                            {lang.english_name}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
-              )}
-              
-              {/* Runtime */}
-              {movie.runtime && (
-                <div className="text-gray-300">
-                  ⏱️ {movie.runtime} minutes
+                
+                {/* Status and Budget (if available) */}
+                <div className="flex flex-wrap gap-4 text-sm md:text-base">
+                  {movie.status && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-gray-400">Status:</span>
+                      <span className={`font-semibold ${
+                        movie.status === 'Released' ? 'text-green-400' : 
+                        movie.status === 'In Production' ? 'text-yellow-400' : 
+                        'text-gray-300'
+                      }`}>
+                        {movie.status}
+                      </span>
+                    </div>
+                  )}
+                  
+                  {movie.budget && movie.budget > 0 && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-gray-400">Budget:</span>
+                      <span className="text-gray-300">
+                        ${movie.budget.toLocaleString()}
+                      </span>
+                    </div>
+                  )}
+                  
+                  {movie.revenue && movie.revenue > 0 && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-gray-400">Revenue:</span>
+                      <span className="text-gray-300">
+                        ${movie.revenue.toLocaleString()}
+                      </span>
+                    </div>
+                  )}
                 </div>
-              )}
-              
-              {/* Genres */}
-              {movie.genres && movie.genres.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {movie.genres.slice(0, 4).map((genre) => (
-                    <span 
-                      key={genre.id}
-                      className="px-2 py-1 bg-purple-900 text-purple-200 rounded-full text-xs md:text-sm"
-                    >
-                      {genre.name}
-                    </span>
-                  ))}
-                </div>
-              )}
+              </div>
             </div>
             
-            {/* Overview */}
-            {movie.overview && (
-              <div className="mb-6 md:mb-8">
-                <h3 className="text-xl md:text-2xl font-semibold text-white mb-3">Overview</h3>
-                <p className="text-gray-300 md:text-lg leading-relaxed">{movie.overview}</p>
+            {/* Similar Movies */}
+            {similarMovies.length > 0 && (
+              <div className="similar-movies mb-10 md:mb-16">
+                <h2 className="text-2xl md:text-3xl font-bold text-white mb-6 md:mb-8">
+                  Similar Movies
+                </h2>
+                <MovieLayout>
+                  {similarMovies.map((similarMovie) => (
+                    <MovieCard
+                      key={similarMovie.id}
+                      movie={similarMovie}
+                      onClick={handleClick}
+                    />
+                  ))}
+                </MovieLayout>
               </div>
             )}
-            
-            {/* Additional Details */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-              {/* Production Companies */}
-              {movie.production_companies && movie.production_companies.length > 0 && (
-                <div className="bg-gray-900 p-4 rounded-xl">
-                  <h4 className="text-lg font-semibold text-white mb-3">Production Companies</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {movie.production_companies.slice(0, 3).map((company) => (
-                      <span 
-                        key={company.id}
-                        className="px-3 py-1 bg-gray-800 text-gray-300 rounded text-sm"
-                      >
-                        {company.name}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-              
-              {/* Languages */}
-              {movie.spoken_languages && movie.spoken_languages.length > 0 && (
-                <div className="bg-gray-900 p-4 rounded-xl">
-                  <h4 className="text-lg font-semibold text-white mb-3">Languages</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {movie.spoken_languages.slice(0, 3).map((lang) => (
-                      <span 
-                        key={lang.iso_639_1}
-                        className="px-3 py-1 bg-gray-800 text-gray-300 rounded text-sm"
-                      >
-                        {lang.english_name}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-            
-            {/* Status and Budget (if available) */}
-            <div className="flex flex-wrap gap-4 text-sm md:text-base">
-              {movie.status && (
-                <div className="flex items-center gap-2">
-                  <span className="text-gray-400">Status:</span>
-                  <span className={`font-semibold ${
-                    movie.status === 'Released' ? 'text-green-400' : 
-                    movie.status === 'In Production' ? 'text-yellow-400' : 
-                    'text-gray-300'
-                  }`}>
-                    {movie.status}
-                  </span>
-                </div>
-              )}
-              
-              {movie.budget && movie.budget > 0 && (
-                <div className="flex items-center gap-2">
-                  <span className="text-gray-400">Budget:</span>
-                  <span className="text-gray-300">
-                    ${movie.budget.toLocaleString()}
-                  </span>
-                </div>
-              )}
-              
-              {movie.revenue && movie.revenue > 0 && (
-                <div className="flex items-center gap-2">
-                  <span className="text-gray-400">Revenue:</span>
-                  <span className="text-gray-300">
-                    ${movie.revenue.toLocaleString()}
-                  </span>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-        
-        {/* Similar Movies */}
-        {similarMovies.length > 0 && (
-          <div className="similar-movies mb-10 md:mb-16">
-            <h2 className="text-2xl md:text-3xl font-bold text-white mb-6 md:mb-8">
-              Similar Movies
-            </h2>
-            <MovieLayout>
-              {similarMovies.map((similarMovie) => (
-                <MovieCard
-                  key={similarMovie.id}
-                  movie={similarMovie}
-                  onClick={handleClick}
-                />
-              ))}
-            </MovieLayout>
-          </div>
+          </>
         )}
       </div>
     </>

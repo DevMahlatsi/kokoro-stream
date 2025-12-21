@@ -44,7 +44,7 @@ export default function Home() {
     });
   };
   const handleShowClick = (show: MediaItem) => {
-    navigate(`/tv/${show.id}`, {
+    navigate(`/tv/${show.id}/season/1/episode/1`, {
       state: { show }
     });
   };

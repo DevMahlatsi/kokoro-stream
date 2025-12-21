@@ -44,64 +44,6 @@ export default function TVShowDetails() {
   // Theater mode state
   const [isTheaterMode, setIsTheaterMode] = useState(false);
 
-  // Define fetchSeasonDetails first since other functions depend on it
-  const fetchSeasonDetails = useCallback(async (showId: number, seasonNumber: number) => {
-    try {
-      setLoadingSeason(true);
-      const apiKey = import.meta.env.VITE_TMDB_API_KEY;
-      const res = await fetch(
-        `https://api.themoviedb.org/3/tv/${showId}/season/${seasonNumber}?api_key=${apiKey}`
-      );
-      if (res.ok) {
-        const data = await res.json();
-        const newSeasonDetails = {
-          season_number: data.season_number,
-          episode_count: data.episodes?.length || 0,
-          episodes: data.episodes || [],
-          name: data.name || `Season ${seasonNumber}`,
-          overview: data.overview || '',
-          poster_path: data.poster_path,
-          air_date: data.air_date || ''
-        };
-        setSeasonDetails(newSeasonDetails);
-        
-        // If current episode is invalid for this season, reset to episode 1
-        if (episode > newSeasonDetails.episode_count) {
-          setEpisode(1);
-        }
-      }
-    } catch (err) {
-      console.error("Error fetching season details:", err);
-    } finally {
-      setLoadingSeason(false);
-    }
-  }, [episode]);
-
-  // Now define other functions that use fetchSeasonDetails
-  const updateUrlParams = useCallback((newSeason: number, newEpisode: number) => {
-    if (show) {
-      navigate(`/tv/${show.id}/season/${newSeason}/episode/${newEpisode}`, {
-        replace: true,
-        state: { show }
-      });
-    }
-  }, [show, navigate]);
-
-  const handleSeasonChange = useCallback((newSeason: number) => {
-    if (show) {
-      fetchSeasonDetails(show.id, newSeason);
-      setSeason(newSeason);
-      updateUrlParams(newSeason, 1);
-    }
-  }, [show, fetchSeasonDetails, updateUrlParams]);
-
-  const handleEpisodeChange = useCallback((newEpisode: number) => {
-    if (show) {
-      setEpisode(newEpisode);
-      updateUrlParams(season, newEpisode);
-    }
-  }, [show, season, updateUrlParams]);
-
   const fetchShowDetails = useCallback(async (showId: string) => {
     try {
       setLoading(true);
@@ -145,7 +87,7 @@ export default function TVShowDetails() {
     } finally {
       setLoading(false);
     }
-  }, [urlSeason, urlEpisode, fetchSeasonDetails]);
+  }, [urlSeason, urlEpisode]);
 
   const fetchSimilarShows = useCallback(async (id: string) => {
     try {
@@ -161,9 +103,37 @@ export default function TVShowDetails() {
     }
   }, []);
 
-  const handleClick = useCallback((show: MediaItem) => {
-    navigate(`/tv/${show.id}/season/1/episode/1`, { state: { show } });
-  }, [navigate]);
+  const fetchSeasonDetails = useCallback(async (showId: number, seasonNumber: number) => {
+    try {
+      setLoadingSeason(true);
+      const apiKey = import.meta.env.VITE_TMDB_API_KEY;
+      const res = await fetch(
+        `https://api.themoviedb.org/3/tv/${showId}/season/${seasonNumber}?api_key=${apiKey}`
+      );
+      if (res.ok) {
+        const data = await res.json();
+        const newSeasonDetails = {
+          season_number: data.season_number,
+          episode_count: data.episodes?.length || 0,
+          episodes: data.episodes || [],
+          name: data.name || `Season ${seasonNumber}`,
+          overview: data.overview || '',
+          poster_path: data.poster_path,
+          air_date: data.air_date || ''
+        };
+        setSeasonDetails(newSeasonDetails);
+        
+        // If current episode is invalid for this season, reset to episode 1
+        if (episode > newSeasonDetails.episode_count) {
+          setEpisode(1);
+        }
+      }
+    } catch (err) {
+      console.error("Error fetching season details:", err);
+    } finally {
+      setLoadingSeason(false);
+    }
+  }, [episode]);
 
   useEffect(() => {
     // If we have URL params but no location state (direct URL access)
@@ -189,32 +159,10 @@ export default function TVShowDetails() {
     }
   }, [location.state, id, urlSeason, urlEpisode, fetchShowDetails, fetchSimilarShows, fetchSeasonDetails]);
 
-  // Helper functions (these are not hooks, so they can stay here)
-  const goToNextEpisode = () => {
-    if (seasonDetails && episode < seasonDetails.episode_count) {
-      const newEpisode = episode + 1;
-      setEpisode(newEpisode);
-      updateUrlParams(season, newEpisode);
-    } else if (show?.number_of_seasons && season < show.number_of_seasons) {
-      // Go to next season, episode 1
-      const newSeason = season + 1;
-      handleSeasonChange(newSeason);
-    }
-  };
+  const handleClick = useCallback((show: MediaItem) => {
+    navigate(`/tv/${show.id}/season/1/episode/1`, { state: { show } });
+  }, [navigate]);
 
-  const goToPrevEpisode = () => {
-    if (episode > 1) {
-      const newEpisode = episode - 1;
-      setEpisode(newEpisode);
-      updateUrlParams(season, newEpisode);
-    } else if (season > 1) {
-      // Go to previous season
-      const newSeason = season - 1;
-      handleSeasonChange(newSeason);
-    }
-  };
-
-  // Conditional returns - AFTER all hooks
   if (loading) {
     return (
       <>
@@ -259,6 +207,49 @@ export default function TVShowDetails() {
       </>
     );
   }
+
+  // Functions that depend on show being not null
+  const updateUrlParams = useCallback((newSeason: number, newEpisode: number) => {
+    navigate(`/tv/${show.id}/season/${newSeason}/episode/${newEpisode}`, {
+      replace: true,
+      state: { show }
+    });
+  }, [show, navigate]);
+
+  const handleSeasonChange = useCallback((newSeason: number) => {
+    fetchSeasonDetails(show.id, newSeason);
+    setSeason(newSeason);
+    updateUrlParams(newSeason, 1);
+  }, [show, fetchSeasonDetails, updateUrlParams]);
+
+  const handleEpisodeChange = useCallback((newEpisode: number) => {
+    setEpisode(newEpisode);
+    updateUrlParams(season, newEpisode);
+  }, [show, season, updateUrlParams]);
+
+  const goToNextEpisode = () => {
+    if (seasonDetails && episode < seasonDetails.episode_count) {
+      const newEpisode = episode + 1;
+      setEpisode(newEpisode);
+      updateUrlParams(season, newEpisode);
+    } else if (show.number_of_seasons && season < show.number_of_seasons) {
+      // Go to next season, episode 1
+      const newSeason = season + 1;
+      handleSeasonChange(newSeason);
+    }
+  };
+
+  const goToPrevEpisode = () => {
+    if (episode > 1) {
+      const newEpisode = episode - 1;
+      setEpisode(newEpisode);
+      updateUrlParams(season, newEpisode);
+    } else if (season > 1) {
+      // Go to previous season
+      const newSeason = season - 1;
+      handleSeasonChange(newSeason);
+    }
+  };
 
   return (
     <>
@@ -582,4 +573,4 @@ export default function TVShowDetails() {
       </div>
     </>
   );
-} 
+}

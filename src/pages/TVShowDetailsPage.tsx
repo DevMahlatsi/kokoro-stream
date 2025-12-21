@@ -1,6 +1,6 @@
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import Menu from "../components/Menu";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
 import type { MediaItem, ShowApiResponse, Season, Episode } from "../types/movies";
 import { ShowCard } from "../components/ShowCard";
 import MovieLayout from "../Layout/MovieLayout";
@@ -44,60 +44,10 @@ export default function TVShowDetails() {
   // Theater mode state
   const [isTheaterMode, setIsTheaterMode] = useState(false);
 
-  const fetchShowDetails = useCallback(async (id: string) => {
-    try {
-      setLoading(true);
-      setError(null);
+  // Create a ref to track if fetchSeasonDetails is available
+  const fetchSeasonDetailsRef = useRef<((showId: number, seasonNumber: number) => Promise<void>) | null>(null);
 
-      const apiKey = import.meta.env.VITE_TMDB_API_KEY;
-      const [showResponse, similarResponse] = await Promise.all([
-        fetch(`https://api.themoviedb.org/3/tv/${id}?api_key=${apiKey}`),
-        fetch(`https://api.themoviedb.org/3/tv/${id}/similar?api_key=${apiKey}`)
-      ]);
-
-      if (!showResponse.ok) throw new Error("Failed to fetch TV Show Details");
-      if (!similarResponse.ok) throw new Error("Failed to fetch similar TV Shows");
-
-      const showData: any = await showResponse.json();
-      const similarData: ShowApiResponse = await similarResponse.json();
-
-      // Process show data to ensure seasons is an array
-      const processedShowData: MediaItem = {
-        ...showData,
-        seasons: showData.seasons || []
-      };
-
-      setShow(processedShowData);
-      setSimilarShows(similarData.results);
-
-      // Fetch season details based on URL params or default to season 1
-      const initialSeason = urlSeason ? parseInt(urlSeason, 10) : 1;
-      if (showData.id) {
-        fetchSeasonDetails(showData.id, initialSeason);
-      }
-
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An unknown error occurred');
-      console.error('Fetch error:', err);
-    } finally {
-      setLoading(false);
-    }
-  }, [urlSeason, urlEpisode]);
-
-  const fetchSimilarShows = useCallback(async (id: string) => {
-    try {
-      const apiKey = import.meta.env.VITE_TMDB_API_KEY;
-      const res = await fetch(
-        `https://api.themoviedb.org/3/tv/${id}/similar?api_key=${apiKey}`
-      );
-      if (!res.ok) throw new Error("Failed to fetch similar TV Shows");
-      const json: ShowApiResponse = await res.json();
-      setSimilarShows(json.results);
-    } catch (err) {
-      console.error("Error fetching similar movies: ", err);
-    }
-  }, []);
-
+  // Define fetchSeasonDetails first
   const fetchSeasonDetails = useCallback(async (showId: number, seasonNumber: number) => {
     try {
       setLoadingSeason(true);
@@ -130,28 +80,159 @@ export default function TVShowDetails() {
     }
   }, [episode]);
 
+  // Store in ref so it can be accessed in useEffect
+  fetchSeasonDetailsRef.current = fetchSeasonDetails;
+
+  // Define updateUrlParams
+  const updateUrlParams = useCallback((newSeason: number, newEpisode: number) => {
+    if (show) {
+      navigate(`/tv/${show.id}/season/${newSeason}/episode/${newEpisode}`, {
+        replace: true,
+        state: { show }
+      });
+    }
+  }, [show, navigate]);
+
+  // Define handleSeasonChange
+  const handleSeasonChange = useCallback((newSeason: number) => {
+    if (show) {
+      fetchSeasonDetails(show.id, newSeason);
+      setSeason(newSeason);
+      updateUrlParams(newSeason, 1);
+    }
+  }, [show, fetchSeasonDetails, updateUrlParams]);
+
+  // Define handleEpisodeChange
+  const handleEpisodeChange = useCallback((newEpisode: number) => {
+    if (show) {
+      setEpisode(newEpisode);
+      updateUrlParams(season, newEpisode);
+    }
+  }, [show, season, updateUrlParams]);
+
+  // Define fetchShowDetails
+  const fetchShowDetails = useCallback(async (showId: string) => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const apiKey = import.meta.env.VITE_TMDB_API_KEY;
+      const [showResponse, similarResponse] = await Promise.all([
+        fetch(`https://api.themoviedb.org/3/tv/${showId}?api_key=${apiKey}`),
+        fetch(`https://api.themoviedb.org/3/tv/${showId}/similar?api_key=${apiKey}`)
+      ]);
+
+      if (!showResponse.ok) throw new Error("Failed to fetch TV Show Details");
+      if (!similarResponse.ok) throw new Error("Failed to fetch similar TV Shows");
+
+      const showData: any = await showResponse.json();
+      const similarData: ShowApiResponse = await similarResponse.json();
+
+      // Process show data to ensure seasons is an array
+      const processedShowData: MediaItem = {
+        ...showData,
+        seasons: showData.seasons || []
+      };
+
+      setShow(processedShowData);
+      setSimilarShows(similarData.results);
+
+      // Fetch season details based on URL params or default to season 1
+      const initialSeason = urlSeason ? parseInt(urlSeason, 10) : 1;
+      const initialEpisode = urlEpisode ? parseInt(urlEpisode, 10) : 1;
+      
+      if (showData.id && fetchSeasonDetailsRef.current) {
+        await fetchSeasonDetailsRef.current(showData.id, initialSeason);
+        
+        // Set episode after season details are loaded
+        setEpisode(initialEpisode);
+      }
+
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An unknown error occurred');
+      console.error('Fetch error:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, [urlSeason, urlEpisode]);
+
+  // Define fetchSimilarShows
+  const fetchSimilarShows = useCallback(async (id: string) => {
+    try {
+      const apiKey = import.meta.env.VITE_TMDB_API_KEY;
+      const res = await fetch(
+        `https://api.themoviedb.org/3/tv/${id}/similar?api_key=${apiKey}`
+      );
+      if (!res.ok) throw new Error("Failed to fetch similar TV Shows");
+      const json: ShowApiResponse = await res.json();
+      setSimilarShows(json.results);
+    } catch (err) {
+      console.error("Error fetching similar movies: ", err);
+    }
+  }, []);
+
+  // Define handleClick
+  const handleClick = useCallback((show: MediaItem) => {
+    navigate(`/tv/${show.id}/season/1/episode/1`, { state: { show } });
+  }, [navigate]);
+
+  // Add useRef for initial render tracking
+  const initialRenderRef = useRef(true);
+
   useEffect(() => {
-    if (location.state?.show) {
+    // If we have URL params but no location state (direct URL access)
+    if (id && !location.state?.show) {
+      fetchShowDetails(id);
+    } 
+    // If we have location state (navigation from another page)
+    else if (location.state?.show) {
       const currentShow = (location.state as LocationState).show;
       setShow(currentShow);
       fetchSimilarShows(currentShow.id.toString());
       
       // Use URL params if available, otherwise fetch season 1
       const initialSeason = urlSeason ? parseInt(urlSeason, 10) : 1;
-      fetchSeasonDetails(currentShow.id, initialSeason);
+      const initialEpisode = urlEpisode ? parseInt(urlEpisode, 10) : 1;
+      
+      if (fetchSeasonDetailsRef.current) {
+        fetchSeasonDetailsRef.current(currentShow.id, initialSeason);
+      }
+      setEpisode(initialEpisode);
       setLoading(false);
-    } else if (id) {
-      fetchShowDetails(id);
     } else {
       setError("Invalid TV show ID");
       setLoading(false);
     }
-  }, [location.state, id, urlSeason, urlEpisode, fetchShowDetails, fetchSimilarShows, fetchSeasonDetails]);
+    
+    initialRenderRef.current = false;
+  }, [location.state, id, urlSeason, urlEpisode, fetchShowDetails, fetchSimilarShows]);
 
-  const handleClick = useCallback((show: MediaItem) => {
-    navigate(`/tv/${show.id}/season/1/episode/1`, { state: { show } });
-  }, [navigate]);
+  // Helper functions (these are not hooks, so they can stay here)
+  const goToNextEpisode = () => {
+    if (seasonDetails && episode < seasonDetails.episode_count) {
+      const newEpisode = episode + 1;
+      setEpisode(newEpisode);
+      updateUrlParams(season, newEpisode);
+    } else if (show?.number_of_seasons && season < show.number_of_seasons) {
+      // Go to next season, episode 1
+      const newSeason = season + 1;
+      handleSeasonChange(newSeason);
+    }
+  };
 
+  const goToPrevEpisode = () => {
+    if (episode > 1) {
+      const newEpisode = episode - 1;
+      setEpisode(newEpisode);
+      updateUrlParams(season, newEpisode);
+    } else if (season > 1) {
+      // Go to previous season
+      const newSeason = season - 1;
+      handleSeasonChange(newSeason);
+    }
+  };
+
+  // Conditional returns - AFTER all hooks
   if (loading) {
     return (
       <>
@@ -196,49 +277,6 @@ export default function TVShowDetails() {
       </>
     );
   }
-
-  // Functions that depend on show being not null
-  const updateUrlParams = useCallback((newSeason: number, newEpisode: number) => {
-    navigate(`/tv/${show.id}/season/${newSeason}/episode/${newEpisode}`, {
-      replace: true,
-      state: { show }
-    });
-  }, [show, navigate]);
-
-  const handleSeasonChange = useCallback((newSeason: number) => {
-    fetchSeasonDetails(show.id, newSeason);
-    setSeason(newSeason);
-    updateUrlParams(newSeason, 1);
-  }, [show, fetchSeasonDetails, updateUrlParams]);
-
-  const handleEpisodeChange = useCallback((newEpisode: number) => {
-    setEpisode(newEpisode);
-    updateUrlParams(season, newEpisode);
-  }, [show, season, updateUrlParams]);
-
-  const goToNextEpisode = () => {
-    if (seasonDetails && episode < seasonDetails.episode_count) {
-      const newEpisode = episode + 1;
-      setEpisode(newEpisode);
-      updateUrlParams(season, newEpisode);
-    } else if (show.number_of_seasons && season < show.number_of_seasons) {
-      // Go to next season, episode 1
-      const newSeason = season + 1;
-      handleSeasonChange(newSeason);
-    }
-  };
-
-  const goToPrevEpisode = () => {
-    if (episode > 1) {
-      const newEpisode = episode - 1;
-      setEpisode(newEpisode);
-      updateUrlParams(season, newEpisode);
-    } else if (season > 1) {
-      // Go to previous season
-      const newSeason = season - 1;
-      handleSeasonChange(newSeason);
-    }
-  };
 
   return (
     <>

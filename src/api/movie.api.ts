@@ -31,3 +31,4 @@ export const getNowPlaying = () => fetchMovies('now_playing');
 export const getUpcomingMovies = () => fetchMovies('upcoming');
 export const getTopRatedMovies = () => fetchMovies('top_rated');
 export const getPopularMovies = () => fetchMovies('popular');
+

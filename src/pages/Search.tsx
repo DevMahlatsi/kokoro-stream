@@ -19,7 +19,6 @@ export default function Search() {
         setLoading(true);
         const query = location.state?.query || '';
         
-        // Use the API function instead
         const results = await fetchSearchResults(query);
         
         setSearchResults(results);

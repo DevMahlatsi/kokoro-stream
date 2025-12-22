@@ -9,34 +9,34 @@ import { getNowPlaying } from "../api/movie.api";
 import { getAiringToday } from "../api/tvshow.api";
 
 export default function Home() {
-  const [query, setQuery] = useState<string>("");
-  const [nowPlaying, setNowPlaying] = useState<MediaItem[]>([]);
-  const [airingToday, setAiringToday] = useState<MediaItem[]>([]);
-  const [moviesLoading, setMoviesLoading] = useState<boolean>(true);
-  const [showsLoading, setShowsLoading] = useState<boolean>(true);
+  // const [query, setQuery] = useState<string>("");
+  // const [nowPlaying, setNowPlaying] = useState<MediaItem[]>([]);
+  // const [airingToday, setAiringToday] = useState<MediaItem[]>([]);
+  // const [moviesLoading, setMoviesLoading] = useState<boolean>(true);
+  // const [showsLoading, setShowsLoading] = useState<boolean>(true);
   const navigate = useNavigate();
   
-  useEffect(() => {
-    async function fetchRecommendations() {
-      try {
-        const movies = await getNowPlaying();
-        setNowPlaying(movies);
-      } catch (err) {
-        console.error('Fetch error for movies:', err);
-      } finally {
-        setMoviesLoading(false);
-      }
-      try {
-        const shows = await getAiringToday();
-        setAiringToday(shows);
-      } catch (err) {
-        console.error('Fetch Error for TV Shows:', err);
-      } finally {
-        setShowsLoading(false);
-      }
-    }
-    fetchRecommendations();
-  }, []);
+  // useEffect(() => {
+  //   async function fetchRecommendations() {
+  //     try {
+  //       const movies = await getNowPlaying();
+  //       setNowPlaying(movies);
+  //     } catch (err) {
+  //       console.error('Fetch error for movies:', err);
+  //     } finally {
+  //       setMoviesLoading(false);
+  //     }
+  //     try {
+  //       const shows = await getAiringToday();
+  //       setAiringToday(shows);
+  //     } catch (err) {
+  //       console.error('Fetch Error for TV Shows:', err);
+  //     } finally {
+  //       setShowsLoading(false);
+  //     }
+  //   }
+  //   fetchRecommendations();
+  // }, []);
     
   const handleMovieClick = (movie: MediaItem) => {
     navigate(`/movie/${movie.id}`, { 

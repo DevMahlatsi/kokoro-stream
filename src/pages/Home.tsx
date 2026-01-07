@@ -9,13 +9,22 @@ import { getNowPlaying } from "../api/movie.api";
 import { getAiringToday } from "../api/tvshow.api";
 
 export default function Home() {
-  // const [query, setQuery] = useState<string>("");
+  const [query, setQuery] = useState<string>("");
   // const [nowPlaying, setNowPlaying] = useState<MediaItem[]>([]);
   // const [airingToday, setAiringToday] = useState<MediaItem[]>([]);
   // const [moviesLoading, setMoviesLoading] = useState<boolean>(true);
   // const [showsLoading, setShowsLoading] = useState<boolean>(true);
   const navigate = useNavigate();
   
+  const {
+    movies: nowPlaying,
+    shows: airingToday,
+    moviesLoading,
+    showsLoading,
+    error,
+    allLoading
+  } = useMediaRecommendations();
+
   // useEffect(() => {
   //   async function fetchRecommendations() {
   //     try {
@@ -37,6 +46,7 @@ export default function Home() {
   //   }
   //   fetchRecommendations();
   // }, []);
+
     
   const handleMovieClick = (movie: MediaItem) => {
     navigate(`/movie/${movie.id}`, { 
@@ -144,4 +154,8 @@ export default function Home() {
       </main>
     </>
   );
+}
+
+function useMediaRecommendations(): { movies: any; shows: any; moviesLoading: any; showsLoading: any; error: any; allLoading: any; } {
+  throw new Error("Function not implemented.");
 }

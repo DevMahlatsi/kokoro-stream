@@ -16,14 +16,7 @@ export default function Home() {
   // const [showsLoading, setShowsLoading] = useState<boolean>(true);
   const navigate = useNavigate();
   
-  const {
-    movies: nowPlaying,
-    shows: airingToday,
-    moviesLoading,
-    showsLoading,
-    error,
-    allLoading
-  } = useMediaRecommendations();
+  
 
   // useEffect(() => {
   //   async function fetchRecommendations() {

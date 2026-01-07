@@ -100,12 +100,11 @@ export default function Home() {
             </button>
           </div>
           
-          {/* <div className='py-23'>
+          <div className='py-23'>
             <button type="button" className='hover:cursor-pointer border py-3 rounded-xl text-purple-400 hover:text-purple-700 p-4'>
               Explore Library
             </button>
-          </div> */}
-          
+          </div>
         </form>
 
         {/* Movies Section */}
